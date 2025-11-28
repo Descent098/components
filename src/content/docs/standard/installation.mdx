@@ -1,0 +1,50 @@
+---
+title: Installation
+description: The installation instructions for the components
+---
+
+import RequiredTech from "@/components/RequiredTech.astro"
+import {Image} from "astro:assets"
+import HTMLIcon from "@/assets/icons/html-5-svgrepo-com.svg"
+import CSSIcon from "@/assets/icons/css-3-svgrepo-com.svg"
+import JSIcon from "@/assets/icons/js-svgrepo-com.svg"
+
+Components in this section do not require installation. There will be more details in the pages of each individual component, but in general this area uses 
+
+<div class="grid md:grid-cols-3">
+    <Image src={HTMLIcon} alt="HTML icon" class="w-30"/>
+    <Image src={CSSIcon} alt="CSS 3 icon" class="w-30"/>
+    <Image src={JSIcon} alt="Javascript icon" class="w-30"/>
+</div>
+
+Simple, plain, HTML, CSS, JS and occasionally web components.
+
+
+## What Are Web Components?
+
+The web components standard[^1] [^2] is a browser standard that allows people to define their own custom components they can use. They are defined in javascript, but can be used like regular HTML elements. They tend to look something like this:
+
+```js
+class MyElement extends HTMLElement{
+    constructor() {
+        super();
+    }
+    ... // More code here
+}
+
+customElements.define("my-element", MyElement)
+```
+
+After running the above code you would be able to use the element with:
+
+```html
+<my-element></my-element>
+```
+
+
+<RequiredTech technologies={["webcomponents"]} noInstall={true} noTitle={true}/>
+
+## References
+
+[^1]: Not "official", but a good guide https://www.webcomponents.org/introduction
+[^2]: Obligatory MDN link: https://developer.mozilla.org/en-US/docs/Web/API/Web_components

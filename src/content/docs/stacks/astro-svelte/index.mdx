@@ -1,0 +1,18 @@
+---
+title: About the stack
+---
+import RequiredTech from "@/components/RequiredTech.astro"
+
+This stack is designed to be for primarily static sites but that need a bit of more complicated functionality and/or reactivity.
+
+
+## Technologies
+
+<RequiredTech technologies={["astro","svelte"]} noInstall={true} noTitle={true}/>
+
+For more details on how to get started, check out the [installation](./installation) page.
+
+## Why
+
+This stack excels for projects looking to make heavy use of [static generation](https://developer.mozilla.org/en-US/docs/Glossary/SSG) that also need some more complicated interactions. While it can be used for more dynamic use cases, [astro](https://astro.build/) in particular excels at content-driven sites (ecommerce, blogs, documentation \[like this site, which uses astro\]), and the addition of [svelte](https://svelte.dev/) unlocks the ability to tackle more complicated client-side logic such as for static application frontends.
+

@@ -1,0 +1,146 @@
+---
+title: Installation
+---
+import { Steps, Code } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import DownloadRepoGuide from "@/assets/guides/astro-daisy/repo-zip.png"
+import TemplateRepoGuide from "@/assets/guides/astro-daisy/template-copy.png"
+import RequiredTech from "@/components/RequiredTech.astro"
+
+To install this stack you will need:
+
+
+<RequiredTech technologies={["astro","daisyUI","TailwindCSS"]} noInstall={true} noTitle={true}/>
+
+There are two options for installation:
+
+
+1. [Use my Template](#template) (easiest)
+2. [Use Astro CLI, then install Tailwind + daisyUI](#Astro-CLI) (medium difficulty)
+
+## Template
+
+To get started with my template head to [this repository](https://github.com/QU-UP/astro-daisy), and follow one of the guides below
+
+
+<details> 
+
+<summary>My project will be on Github</summary> 
+
+<Steps>
+
+1. Hit the `Use This Template` button, then the `Create a new Repository` Button
+    <Image src={TemplateRepoGuide} alt="Guide on Using Github Templates"/>
+2. Fill out the required fields for your own repo
+3. Clone your new repo locally `git clone https://github.com/<your Username>/<repo name>`
+4. Install dependencies with:
+    ```bash
+    npm install
+    ```
+5. Run the dev server with:
+    ```bash
+    npm run dev
+    ```
+
+</Steps>
+
+</details>
+
+<details> 
+
+<summary>My project will not be on Github</summary> 
+
+
+
+<Steps>
+
+1. Go to [https://github.com/QU-UP/astro-daisy](https://github.com/QU-UP/astro-daisy)
+2. Hit the `< > Code` Button, and hit `Download Zip`
+    <Image src={DownloadRepoGuide} alt="Guide on Downloading a zip from github"/>
+3. Extract the zip file you downloaded
+4. Open a terminal in the folder you extracted the contents to, and run
+    ```bash
+    npm install
+    ```
+5. Make sure everything is working by running
+    ```bash
+    npm run dev
+    ```
+</Steps>
+
+</details>
+
+This will set you up with everything you need to use any of the components in this section, and you can read the repository readme for more details about easy deployment to [github pages](https://docs.github.com/en/pages)
+
+## Astro CLI
+
+I would recommend following the [official guide for setting up astro](https://docs.astro.build/en/getting-started/) in case anything has changed, same with the guide for [integrating daisy with astro](https://daisyui.com/docs/install/astro/).
+
+But, as of writing you have 2 options:
+
+
+<details>
+<summary>Automated way</summary>
+
+<Steps>
+1. Install and setup astro + tailwind from the CLI with the `basics` setup:
+    ```bash
+    npm create astro@latest -- --template basics --add tailwind --install <project name>
+    ```
+2. Go into the folder that was just created for your project `<project name>` from last command and install daisy:
+    ```bash
+    npm install daisyui@latest
+    ```
+3. Add daisy as a plugin to tailwind
+    <Code title="src/styles/global.css" code={`@import "tailwindcss";\n@plugin "daisyui";`} lang="css"/>
+4. Add tailwind + daisy to your page layout; Add the following lines to the top of your `Layout.astro` file
+    <Code title="src/layouts/Layout.astro" code={`---\nimport "../styles/global.css"\n---`} lang="astro"/>
+5. (optional) Add in a component you want to `src/pages/index.astro` and confirm everything is working with:
+    ```bash
+    npm run dev
+    ```
+</Steps>
+
+</details>
+
+<details>
+<summary>Manual way</summary>
+<Steps>
+1. Setting up astro with the CLI; Start by running:
+    ```bash
+    npm create astro@latest
+    ```
+
+    Fill out the fields it requires, I would recommend using the `basics` template when prompted (If you choose another template you'll need to change the paths for steps 4-6) and selecting the `install dependencies` option while running
+2. Go into the new project folder, and install tailwind + daisy
+    ```bash
+    npm install tailwindcss@latest @tailwindcss/vite@latest daisyui@latest
+    ```
+3. Update astro config to add tailwind
+    <Code title="astro.config.mjs" code={`
+    // @ts-check
+    import { defineConfig } from "astro/config";
+    import tailwindcss from "@tailwindcss/vite";
+
+    export default defineConfig({
+    vite: {
+        plugins: [tailwindcss()],
+    },
+    });`} lang="ts" />
+4. Add daisy as a plugin to tailwind (filepath is different if you chose a different template)
+    <Code title="src/styles/global.css" code={`@import "tailwindcss";\n@plugin "daisyui";`} lang="css"/>
+5. Add tailwind + daisy to your page layout; Add the following lines to the top of your `Layout.astro` file (filepath is different if you chose a different template)
+    <Code title="src/layouts/Layout.astro" code={`---\nimport "../styles/global.css"\n---`} lang="astro"/>
+6. Add in a component you want to `index.astro` and confirm everything is working with:
+    ```bash
+    npm run dev
+    ```
+</Steps>
+
+</details>
+
+
+
+
+
+

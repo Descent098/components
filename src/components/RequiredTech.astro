@@ -1,0 +1,69 @@
+---
+import { Image } from 'astro:assets';
+import {Code} from "@astrojs/starlight/components"
+import TailwindIcon from "@/assets/icons/tailwind-svgrepo-com.svg"
+import DaisyUIIcon from "@/assets/icons/daisyui.svg"
+import SvelteIcon from "@/assets/icons/svelte-icon-svgrepo-com.svg"
+import WebComponentsIcon from "@/assets/icons/webcomponents-svgrepo-com.svg"
+import AstroIcon from "@/assets/icons/astro-icon-light-gradient.svg"
+
+type supportedTechnologies = "TailwindCSS" | "daisyUI" | "astro" | "svelte" | "webcomponents"
+
+const metadata = {
+  TailwindCSS: {
+    name: "TailwindCSS",
+    link: "https://tailwindcss.com/",
+    icon: TailwindIcon,
+    package:"tailwind",
+  },
+  daisyUI: {
+    name: "daisyUI",
+    link: "https://daisyui.com/",
+    icon: DaisyUIIcon,
+    package:"daisyui",
+  },
+  astro:{
+    name:"astro",
+    link:"https://astro.build",
+    icon:AstroIcon,
+    package:"astro",
+  },
+  svelte:{
+    name:"svelte",
+    link:"",
+    icon:SvelteIcon,
+    package:"svelte",
+  },
+  webcomponents:{
+    name:"Web Components",
+    link:"",
+    icon:WebComponentsIcon,
+    package:"",
+  }
+}
+
+interface Props {
+  technologies: supportedTechnologies[]
+  noTitle: boolean
+  noInstall:boolean
+  additionalPackages:string[] // Any additional packages you want to add to the install details
+}
+const { technologies = [], noTitle=false, noInstall=false, additionalPackages=[] } = Astro.props
+const installDetails = `npm install ${technologies.map((tech)=>(metadata[tech].package)).join(" ")} ${additionalPackages.join(" ")}`
+---
+<div>
+  {!noTitle && <h3 class="font-bold">Required Technologies</h3>}
+  <div class="flex gap-3">
+    {technologies.map((tech) => (
+      <a href={metadata[tech].link} target="_blank" class="text-accent no-underline w-24 flex flex-col justify-center align-center content-center text-center">
+        <Image src={metadata[tech].icon} alt={tech}/>
+        <p>{metadata[tech].name}</p>
+      </a>
+    ))}
+  </div>
+  <p class="text-xs"><em>Please note that this project has <strong>no official affiliation</strong> with any of the above</em>
+  </p>
+  {!noInstall &&
+    <Code title='Install Details' code={installDetails} lang="bash"  />
+  }
+</div>

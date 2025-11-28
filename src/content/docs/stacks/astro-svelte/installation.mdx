@@ -1,0 +1,54 @@
+---
+title: Installation
+---
+import { Steps, Code } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+
+import RequiredTech from "@/components/RequiredTech.astro"
+import Counter from "@/components/astro-svelte/counter.svelte"
+import CounterText from "@/components/astro-svelte/counter.svelte?raw"
+
+To install this stack you will need:
+
+
+<RequiredTech technologies={["astro","svelte"]} noInstall={true} noTitle={true}/>
+
+## Astro CLI
+
+I would recommend following the [official guide for setting up astro](https://docs.astro.build/en/getting-started/) in case anything has changed, same with the guide for [integrating svelte with astro](https://docs.astro.build/en/guides/integrations-guide/svelte/).
+
+But, as of writing the steps are:
+
+<Steps>
+1. Install and setup astro + svelte from the CLI with the `basics` setup:
+    ```bash
+    npm create astro@latest -- --template basics --add svelte --install <project name>
+    ```
+2. (optional) Add in a component you want to `src/components/<component>.svelte`, like a counter:
+    <Code title="src/components/counter.svelte" lang='svelte' code={CounterText}/>
+
+3. (optional) Import the new component on a page:
+    <Code title="src/pages/index.astro" lang="astro" code={`---
+    import Layout from '../layouts/Layout.astro';
+    import Counter from "../components/counter.svelte"
+    ---
+    <Layout>
+        <!--Client:load is necessary for basically all svelte components -->
+        <Counter client:load/>
+    </Layout>`}/>
+4. Confirm everything is working with:
+    ```bash
+    npm run dev
+    ```
+</Steps>
+
+It should look something like this:
+
+<Counter client:load/>
+
+
+
+
+
+
+

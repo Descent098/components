@@ -1,0 +1,31 @@
+---
+title: Kieran's Components
+description: Components I use with various technologies
+template: splash # Remove or comment out this line to display the site sidebar on this page.
+hero:
+  tagline: A site to showcase the components I use with various technologies and tech stacks
+  image:
+    file: ../../assets/profile-pic.webp
+  actions:
+    - text: Get Started
+      link: /standard/
+      icon: right-arrow
+---
+
+import RequiredTech from "@/components/RequiredTech.astro"
+
+
+<div class="spacer" style="height:10vh"></div>
+
+
+
+## Attributions
+
+Thank you to the following
+
+- <a href="https://www.svgrepo.com" target="_blank">SVG Repo</a> for the majority of the various vectors and icons
+- The [AstroJS](https://astro.build/) team for [Starlight](https://starlight.astro.build/) the template used to generate this site
+
+### Tecnologies
+
+<RequiredTech technologies={["TailwindCSS", "daisyUI", "astro", "svelte", "webcomponents"]} noTitle={true} noInstall={true}/>
