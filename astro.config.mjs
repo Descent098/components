@@ -34,9 +34,9 @@ export default defineConfig({
 		  plugins:[
         starlightUiTweaks({
             navbarLinks: [
-                { label: "Standard", href: "/standard" },
-                { label: "Stacks", href: "/stacks" },
-                { label: "Blog", href: "/blog" },
+                { label: "Standard", href: "/components/standard" },
+                { label: "Stacks", href: "/components/stacks" },
+                { label: "Blog", href: "/components/blog" },
             ],
         }),
   starlightBlog({
