@@ -1,0 +1,133 @@
+---
+title: Observable Bar Chart
+---
+
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+import BarChart from "@/components/astro-svelte/observable-plot/BarChart.ts.svelte"
+import BarChart2 from "@/components/astro-svelte/observable-plot/BarChart.js.svelte"
+import BarChartTSRaw from "@/components/astro-svelte/observable-plot/BarChart.ts.svelte?raw"
+import BarChartJSRaw from "@/components/astro-svelte/observable-plot/BarChart.js.svelte?raw"
+import RequiredTech from "@/components/RequiredTech.astro"
+
+This component is used to help setup a bar chart using [Observable plot](https://observablehq.com/plot/)
+
+## Preview
+
+<BarChart 
+    data={
+        [
+            { age: 22, weight: 175 },
+            { age: 18, weight: 150 },
+            { age: 25, weight: 160 },
+            { age: 30, weight: 185 },
+            { age: 21, weight: 140 },
+            { age: 27, weight: 200 },
+            { age: 19, weight: 155 }
+        ]
+    } 
+    xAxisDataField="age" 
+    yAxisDataField="weight"
+    colorConfig={{scheme:"Purples", domain:[0,200]}}
+    fillDataField="weight"
+    xAxisLabel="Age (years)" 
+    yAxisLabel="Weight (lbs)"
+    client:load/>
+
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["astro","svelte"]} noInstall={true}/>
+
+A guide for setting up the stack can be found [here](./../../installation)
+
+Then install observable plot:
+
+```bash
+npm install @observablehq/plot
+```
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+
+
+- data (`Object[]`); The data to use for the chart. Should be a list of objects representing the rows of data (i.e. `[{column1Name:data1, column2Name:data2}, {column1Name:data3, column2Name:data4}]`)
+- xAxisDataField (`string`); The field to use as the source for the x axis
+- yAxisDataField (`string`); The field to use as the source for the y axis
+
+#### Optional 
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| title | `string` | `""` |   The title of the chart  |
+| subtitle | `string` | `""` |   The subtitle of the chart  |
+| xAxisLabel | `string` | `undefined` |  The label for the x axis   |
+| yAxisLabel | `string` | `undefined` |   The label for the y axis  |
+| fillDataField | `string` | `undefined` |  The field to colour the bars based on (usually x/y value or some sort of category)   |
+| colorConfig | `PlotOptions.color` | `undefined` |   The color configuration for examples see https://observablehq.com/@observablehq/plot-cheatsheets-colors  |
+| domain |`Number[]`  | `undefined` |  The domain (the range of numbers found in the y-axis)   |
+| styleOverrides |`PlotOptions.style`  | `undefined` |  A `PlotOptions.style` object with any styling overrides for the chart   |
+| width |`int`  | `undefined` |  The width of the chart   |
+| height | `int` | `undefined` |  The of height the chart   |
+| tooltips | `boolean` | `true` |   Whether to display Tooltips or not when hovering over bars  |
+| sort |`boolean`  | `true` |   Whether to sort the values displayed by y vaule  |
+| sortDescending | `boolean` | `true` |   If sort is true, false will sort by ascending, true will be sort by descending values  |
+| valuesOnBars | `boolean` | `true` |   Whether to show the y-value of the bar over top of the bar  |
+
+<Aside type="caution">Only assign `undefined` to a value if it's default value is `undefined` otherwise your plot may fail to render silently</Aside>
+
+
+### Example
+
+<Code lang="astro" code={`---\nimport BarChart from "../components/BarChart.svelte"\n---\n\n<BarChart \n\tdata={[{age:22, weight:175}, {age:18, weight:150}]} \n\txAxisDataField="age" \n\tyAxisDataField="weight" \n\txAxisLabel="Age (years)" \n\tyAxisLabel="Weight (lbs)" \n\tcolorConfig={{scheme:"Oranges", domain:[0,200]}} \n\tfillDataField="weight" \n\tclient:load\n/>`} title="Page.astro"/>
+
+Which Produces:
+
+<BarChart data={[{age:22, weight:175}, {age:18, weight:150}]} xAxisDataField="age" yAxisDataField="weight" xAxisLabel="Age (years)" yAxisLabel="Weight (lbs)" colorConfig={{scheme:"Oranges", domain:[0,200]}} fillDataField="weight" client:load/>
+
+<Aside type="tip">
+    If you're working with excel spreadsheet data it's worth checking out these [utility functions](./../../../utilities/excel/) as well, since you can chain `getDataFromSpreadsheet()` and `parseDataFromWorksheet()` to get your data into the format you need. If you have a sheet with
+    | age | weight |
+    |-----|--------|
+    | 21 | 185|
+    | 20 | 165|
+
+    You could do 
+
+    <Code lang="svelte" title="myPage.svelte" code={`
+    <script>
+    import {OnMount} from "svelte"
+    import BarChart from "/path/to/components/BarChart.svelte"
+    import { getDataFromSpreadsheet, parseDataFromWorksheet} from "path/to/excel.ts"
+
+    
+    const fileURL = "/spreadsheets/myfile.xlsx"
+
+    // Get data from first sheet of myfile.xlsx
+    const data = await parseDataFromWorksheet(await getDataFromSpreadsheet(fileURL))
+    </script>
+
+    <BarChart data={data} xAxisDataField="age" yAxisDataField="weight" xAxisLabel="Age (years)" yAxisLabel="Weight (lbs)"/>
+    `}/>
+
+
+</Aside>
+
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="svelte" code={BarChartTSRaw} title="BarChart.svelte"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="svelte" code={BarChartJSRaw} title="BarChart.svelte"/>
+  </TabItem>
+</Tabs>
+

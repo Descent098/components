@@ -29,6 +29,10 @@ export default defineConfig({
               label: 'Stack Specific',
               autogenerate: { directory: 'stacks' },
           },
+          {
+              label: 'Utilities',
+              autogenerate: { directory: 'utilities' },
+          },
       ],
 		  customCss:["./src/styles/global.css"],
 		  plugins:[
@@ -36,6 +40,7 @@ export default defineConfig({
             navbarLinks: [
                 { label: "Standard", href: "/components/standard" },
                 { label: "Stacks", href: "/components/stacks" },
+                { label: "Utilities", href: "/components/utilities" },
                 { label: "Blog", href: "/components/blog" },
             ],
         }),

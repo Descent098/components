@@ -1,0 +1,28 @@
+---
+title: Excel Utilities
+---
+
+import {Tabs, TabItem, Code} from "@astrojs/starlight/components"
+
+import ExcelTSRaw from "@/assets/utilities/excel/excel.ts?raw"
+import ExcelJSRaw from "@/assets/utilities/excel/excel.js?raw"
+
+
+These utility scripts are designed to make it easier to get excel data extracted. All of these functions will require you to install xlsx:
+
+```bash
+npm install xlsx
+```
+
+## Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code code={ExcelTSRaw} lang="ts" title="excel.ts"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code code={ExcelJSRaw} lang="js" title="excel.js"/>
+  </TabItem>
+</Tabs>
+
+
