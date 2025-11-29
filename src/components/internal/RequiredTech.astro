@@ -6,8 +6,10 @@ import DaisyUIIcon from "@/assets/icons/daisyui.svg"
 import SvelteIcon from "@/assets/icons/svelte-icon-svgrepo-com.svg"
 import WebComponentsIcon from "@/assets/icons/webcomponents-svgrepo-com.svg"
 import AstroIcon from "@/assets/icons/astro-icon-light-gradient.svg"
+import NextJSIcon from "@/assets/icons/nextjs-fill-svgrepo-com.svg"
+import ReactJSIcon from "@/assets/icons/react-svgrepo-com.svg"
 
-type supportedTechnologies = "TailwindCSS" | "daisyUI" | "astro" | "svelte" | "webcomponents"
+type supportedTechnologies = "TailwindCSS" | "daisyUI" | "astro" | "svelte" | "webcomponents"| "nextJS" | "react"
 
 const metadata = {
   TailwindCSS: {
@@ -30,15 +32,27 @@ const metadata = {
   },
   svelte:{
     name:"svelte",
-    link:"",
+    link:"https://svelte.dev/",
     icon:SvelteIcon,
     package:"svelte",
   },
   webcomponents:{
     name:"Web Components",
-    link:"",
+    link:"https://www.webcomponents.org/",
     icon:WebComponentsIcon,
     package:"",
+  },
+  nextJS:{
+    name:"Next.JS",
+    link:"https://nextjs.org/",
+    icon:NextJSIcon,
+    package:"next@latest"
+  },
+  react:{
+    name:"React",
+    link:"https://react.dev/",
+    icon:ReactJSIcon,
+    package:"react"
   }
 }
 

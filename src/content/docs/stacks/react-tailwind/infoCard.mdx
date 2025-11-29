@@ -1,0 +1,80 @@
+---
+title: Information Card
+---
+
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+import RequiredTech from "@/components/internal/RequiredTech.astro"
+import InfoCard from "@/components/react-tailwind/InfoCard.tsx"
+import InfoCardRaw from "@/components/react-tailwind/InfoCard.tsx?raw"
+import InfoCardJS from "@/components/react-tailwind/InfoCard.jsx"
+import InfoCardJSRaw from "@/components/react-tailwind/InfoCard.jsx?raw"
+
+This card is designed to nicely fade between the image-based view and solid colour view to reveal the description. Great for situations where you only want to display details for specific items users would be interested in
+
+
+## Preview
+
+<InfoCard
+  headline="Paris"
+  smallText="Bonjour"
+  description="ayy lmao (in french)"
+  image="https://images.unsplash.com/photo-1605701877331-645ad05dcb97?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+  imageDescription="A scene of france, baguette smells wafting in the wind"
+ client:load/>
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["react", "TailwindCSS"]} noInstall={true}/>
+
+A guide for setting up the stack can be found [here](./../installation)
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+| Name | Argument Type | Description |
+|------|---------------|-------------|
+| headline | `string` | The card Title |
+| smallText | `string` | The text that shows up on initial load |
+| description | `string` | The text that appears on click |
+| image | `string` | The image to use for the background |
+| imageDescription | `string` | The alt text for the image |
+
+
+### Example
+
+<Tabs>
+  <TabItem label="TSX/JSX Page">
+    <Code lang="tsx" code={`import InfoCard from "path/to/component/infoCard.tsx"\n\n<InfoCard \n\theadline="Germany" \n\tsmallText="Gutten Morgen" \n\tdescription="Mine Pretzel (in German)" \n\timage="https://images.unsplash.com/photo-1618259278412-2819cbdea4dc?q=80&w=1121&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" \n\timageDescription="A scene of germany, bratwurst smells wafting in the wind"\n/>`} title="Page.tsx"/>
+  </TabItem>
+  <TabItem label="Astro">
+    <Code lang="astro" code={`---\nimport InfoCard from "path/to/component/infoCard.tsx"\n---\n\n<InfoCard \n\theadline="Germany" \n\tsmallText="Gutten Morgen" \n\tdescription="Mine Pretzel (in German)" \n\timage="https://images.unsplash.com/photo-1618259278412-2819cbdea4dc?q=80&w=1121&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" \n\timageDescription="A scene of germany, bratwurst smells wafting in the wind" \n\tclient:load\n/>`} title="Page.astro"/>
+  </TabItem>
+</Tabs>
+
+*If you're using a server-side rendering pipeling make sure you specify the component should be hydrated on the client, in astro this is handled by `client:load`, other frameworks will have other conventions*
+
+Which Produces:
+
+<InfoCardJS
+  headline="Germany"
+  smallText="Gutten Morgen"
+  description="Mine Pretzel (in German)"
+  image="https://images.unsplash.com/photo-1618259278412-2819cbdea4dc?q=80&w=1121&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+  imageDescription="A scene of germany, bratwurst smells wafting in the wind"
+ client:load/>
+
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="tsx" code={InfoCardRaw} title="InfoCard.tsx"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="jsx" code={InfoCardJSRaw} title="InfoCard.jsx"/>
+  </TabItem>
+</Tabs>

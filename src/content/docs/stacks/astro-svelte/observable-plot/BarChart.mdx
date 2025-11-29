@@ -7,7 +7,7 @@ import BarChart from "@/components/astro-svelte/observable-plot/BarChart.ts.svel
 import BarChart2 from "@/components/astro-svelte/observable-plot/BarChart.js.svelte"
 import BarChartTSRaw from "@/components/astro-svelte/observable-plot/BarChart.ts.svelte?raw"
 import BarChartJSRaw from "@/components/astro-svelte/observable-plot/BarChart.js.svelte?raw"
-import RequiredTech from "@/components/RequiredTech.astro"
+import RequiredTech from "@/components/internal/RequiredTech.astro"
 
 This component is used to help setup a bar chart using [Observable plot](https://observablehq.com/plot/)
 
@@ -54,13 +54,11 @@ Below are the props you can pass to the component to control it's behaviour.
 
 #### Required
 
-| Name | Argument Type | Default Value | Description |
-|------|---------------|---------------|-------------|
-
-
-- data (`Object[]`); The data to use for the chart. Should be a list of objects representing the rows of data (i.e. `[{column1Name:data1, column2Name:data2}, {column1Name:data3, column2Name:data4}]`)
-- xAxisDataField (`string`); The field to use as the source for the x axis
-- yAxisDataField (`string`); The field to use as the source for the y axis
+| Name | Argument Type | Description |
+|------|---------------|-------------|
+| data | `Object[]` | The data to use for the chart. Should be a list of objects representing the rows of data (i.e. `[{column1Name:data1, column2Name:data2}, {column1Name:data3, column2Name:data4}]`) | 
+| xAxisDataField | `string` |  The field to use as the source for the x axis|
+| yAxisDataField | `string` |  The field to use as the source for the y axis|
 
 #### Optional 
 
@@ -90,10 +88,10 @@ Below are the props you can pass to the component to control it's behaviour.
 
 Which Produces:
 
-<BarChart data={[{age:22, weight:175}, {age:18, weight:150}]} xAxisDataField="age" yAxisDataField="weight" xAxisLabel="Age (years)" yAxisLabel="Weight (lbs)" colorConfig={{scheme:"Oranges", domain:[0,200]}} fillDataField="weight" client:load/>
+<BarChart2 data={[{age:22, weight:175}, {age:18, weight:150}]} xAxisDataField="age" yAxisDataField="weight" xAxisLabel="Age (years)" yAxisLabel="Weight (lbs)" colorConfig={{scheme:"Oranges", domain:[0,200]}} fillDataField="weight" client:load/>
 
 <Aside type="tip">
-    If you're working with excel spreadsheet data it's worth checking out these [utility functions](./../../../utilities/excel/) as well, since you can chain `getDataFromSpreadsheet()` and `parseDataFromWorksheet()` to get your data into the format you need. If you have a sheet with
+    If you're working with excel spreadsheet data it's worth checking out these [utility functions](./../../../../utilities/excel/) as well, since you can chain `getDataFromSpreadsheet()` and `parseDataFromWorksheet()` to get your data into the format you need. If you have a sheet with
     | age | weight |
     |-----|--------|
     | 21 | 185|

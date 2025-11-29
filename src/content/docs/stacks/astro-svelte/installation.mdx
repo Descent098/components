@@ -1,10 +1,13 @@
 ---
 title: Installation
+sidebar:
+  # Set a custom order for the link (lower numbers are displayed higher up)
+  order: 2
 ---
 import { Steps, Code } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 
-import RequiredTech from "@/components/RequiredTech.astro"
+import RequiredTech from "@/components/internal/RequiredTech.astro"
 import Counter from "@/components/astro-svelte/counter.svelte"
 import CounterText from "@/components/astro-svelte/counter.svelte?raw"
 
@@ -20,7 +23,7 @@ I would recommend following the [official guide for setting up astro](https://do
 But, as of writing the steps are:
 
 <Steps>
-1. Install and setup astro + svelte from the CLI with the `basics` setup:
+1. Install and setup astro + svelte from the CLI with the `basics` setup (replace `<project name>` with your project name):
     ```bash
     npm create astro@latest -- --template basics --add svelte --install <project name>
     ```

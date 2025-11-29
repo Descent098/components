@@ -1,11 +1,14 @@
 ---
 title: Installation
+sidebar:
+  # Set a custom order for the link (lower numbers are displayed higher up)
+  order: 2
 ---
 import { Steps, Code } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import DownloadRepoGuide from "@/assets/guides/astro-daisy/repo-zip.png"
 import TemplateRepoGuide from "@/assets/guides/astro-daisy/template-copy.png"
-import RequiredTech from "@/components/RequiredTech.astro"
+import RequiredTech from "@/components/internal/RequiredTech.astro"
 
 To install this stack you will need:
 
@@ -83,7 +86,7 @@ But, as of writing you have 2 options:
 <summary>Automated way</summary>
 
 <Steps>
-1. Install and setup astro + tailwind from the CLI with the `basics` setup:
+1. Install and setup astro + tailwind from the CLI with the `basics` setup (replace `<project name>` with your project name):
     ```bash
     npm create astro@latest -- --template basics --add tailwind --install <project name>
     ```
@@ -104,7 +107,7 @@ But, as of writing you have 2 options:
 </details>
 
 <details>
-<summary>Manual way</summary>
+<summary>Interactive way</summary>
 <Steps>
 1. Setting up astro with the CLI; Start by running:
     ```bash
