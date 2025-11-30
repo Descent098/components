@@ -1,0 +1,234 @@
+---
+title: Observable Line Chart
+---
+
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+import LineChart from "@/components/astro-svelte/observable-plot/LineChart.ts.svelte"
+import LineChartTSRaw from "@/components/astro-svelte/observable-plot/LineChart.ts.svelte?raw"
+import LineChart2 from "@/components/astro-svelte/observable-plot/LineChart.js.svelte"
+import LineChartJSRaw from "@/components/astro-svelte/observable-plot/LineChart.js.svelte?raw"
+import RequiredTech from "@/components/internal/RequiredTech.astro"
+
+This component is used to help setup a line chart using [Observable plot](https://observablehq.com/plot/), there are options for single-line and multi-line (define a `zAxisDataField` that is your category)
+
+## Preview
+
+### Single line version
+
+<LineChart 
+    data={
+        [
+            { day: 1, units_sold: 175 },
+            { day: 2, units_sold: 250 },
+            { day: 3, units_sold: 160 },
+            { day: 4, units_sold: 185 },
+            { day: 5, units_sold: 140 },
+            { day: 6, units_sold: 200 },
+            { day: 7, units_sold: 155 }
+        ]
+    } 
+    xAxisDataField="day" 
+    yAxisDataField="units_sold"
+    xAxisLabel="Day" 
+    yAxisLabel="Units Sold"
+    client:load/>
+
+### Multi line (z axis) version
+
+<LineChart 
+    data={
+        [
+            { day: 1, units_sold: 175, store:"Franklin's Foot Shop"},
+            { day: 2, units_sold: 250, store:"Franklin's Foot Shop"},
+            { day: 3, units_sold: 160, store:"Franklin's Foot Shop"},
+            { day: 4, units_sold: 185, store:"Franklin's Foot Shop"},
+            { day: 5, units_sold: 140, store:"Franklin's Foot Shop"},
+            { day: 6, units_sold: 200, store:"Franklin's Foot Shop"},
+            { day: 7, units_sold: 155, store:"Franklin's Foot Shop"},
+            { day: 1, units_sold: 105, store:"Bobby's BBQ"},
+            { day: 2, units_sold: 81, store:"Bobby's BBQ"},
+            { day: 3, units_sold: 98, store:"Bobby's BBQ"},
+            { day: 4, units_sold: 74, store:"Bobby's BBQ"},
+            { day: 5, units_sold: 32, store:"Bobby's BBQ"},
+            { day: 6, units_sold: 105, store:"Bobby's BBQ"},
+            { day: 7, units_sold: 30, store:"Bobby's BBQ"},
+        ]
+    } 
+    xAxisDataField="day" 
+    yAxisDataField="units_sold"
+    zAxisDataField="store"
+    lineColor="store"
+    xAxisLabel="Day" 
+    yAxisLabel="Units Sold"
+    interpolation="catmull-rom"
+    client:load/>
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["astro","svelte"]} noInstall={true}/>
+
+A guide for setting up the stack can be found [here](./../../installation)
+
+Then install observable plot:
+
+```bash
+npm install @observablehq/plot
+```
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+| Name | Argument Type | Description |
+|------|---------------|-------------|
+| data | `Object[]` | The data to use for the chart. Should be a list of objects representing the rows of data (i.e. `[{column1Name:data1, column2Name:data2}, {column1Name:data3, column2Name:data4}]`) | 
+| xAxisDataField | `string` |  The field to use as the source for the x axis|
+| yAxisDataField | `string` |  The field to use as the source for the y axis|
+
+#### Optional 
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| title | `string` | `""` |   The title of the chart  |
+| subtitle | `string` | `""` |   The subtitle of the chart  |
+| zAxisDataField | `string` |  `undefined` | The field to use as the source for the z axis (multiple line chart category) |
+| xAxisLabel | `string` | `undefined` |  The label for the x axis   |
+| yAxisLabel | `string` | `undefined` |   The label for the y axis  |
+| lineColor | `string` | `undefined` | The color to use for the line (i.e. `blue`, `red`, etc.), or the column label to color lines by | 
+| colorConfig | `PlotOptions.color` | `undefined` |   The color configuration for examples see https://observablehq.com/@observablehq/plot-cheatsheets-colors (if you want to enable legend manually pass `{legend:true}` here) |
+| domain |`Number[]`  | `undefined` |  The domain (the range of numbers found in the y-axis)   |
+| styleOverrides |`PlotOptions.style`  | `undefined` |  A `PlotOptions.style` object with any styling overrides for the chart   |
+| width |`int`  | `undefined` |  The width of the chart   |
+| height | `int` | `undefined` |  The of height the chart   |
+| tooltips | `boolean` | `true` |   Whether to display Tooltips or not when hovering over bars  |
+| sort |`boolean`  | `true` |   Whether to sort the values displayed by y vaule  |
+| sortDescending | `boolean` | `true` |   If sort is true, false will sort by ascending, true will be sort by descending values  |
+| valuesOnBars | `boolean` | `true` |   Whether to show the y-value of the bar over top of the bar  |
+| legend | `boolean` | `true` | Whether to show the color legend (only applicable if z-axis is defined), if you want a legend without a z-axis pass `{legend:true}` to `colorConfig` |
+| interpolation | `string` | `undefined` |  The type of interpolation to use on the line, also sometimes called the curve type, see [here](https://observablehq.com/plot/features/curves) for options  |
+
+<Aside type="caution">Only assign `undefined` to a value if it's default value is `undefined` otherwise your plot may fail to render silently</Aside>
+
+
+### Examples
+
+
+### Single line version
+
+<Code lang="astro" code={`---\nimport LineChart from "../components/LineChart.svelte"\n---\n<LineChart \n\tdata={\n\t    [\n\t        { season: 1, peak_viewers: 175 },\n\t        { season: 2, peak_viewers: 250 },\n\t        { season: 3, peak_viewers: 160 },\n\t        { season: 4, peak_viewers: 185 },\n\t        { season: 5, peak_viewers: 50 },\n\t        { season: 6, peak_viewers: 60 },\n\t        { season: 7, peak_viewers: 10 }\n\t    ]\n\t} \n\ttitle="Viewership of Fake Show By Season"\n\txAxisDataField="season" \n\tyAxisDataField="peak_viewers"\n\txAxisLabel="Season" \n\tyAxisLabel="Peak Viewers (100k viewer)"\n\tclient:load\n/>`} title="Page.astro"/>
+
+Which Produces:
+
+<LineChart2 
+    data={
+        [
+            { season: 1, peak_viewers: 175 },
+            { season: 2, peak_viewers: 250 },
+            { season: 3, peak_viewers: 160 },
+            { season: 4, peak_viewers: 185 },
+            { season: 5, peak_viewers: 50 },
+            { season: 6, peak_viewers: 60 },
+            { season: 7, peak_viewers: 10 }
+        ]
+    } 
+    title="Viewership of Fake Show By Season"
+    xAxisDataField="season" 
+    yAxisDataField="peak_viewers"
+    xAxisLabel="Season" 
+    yAxisLabel="Peak Viewers (100k viewer)"
+    client:load/>
+
+### Multi line (z axis) version
+
+<Code lang="astro" code={`---\nimport LineChart from "../components/LineChart.svelte"\n---\n<LineChart \n\tdata={\n\t    [\n\t        { season: 1, peak_viewers: 300 , show:"Franklin's Fiends"},\n\t        { season: 2, peak_viewers: 250 , show:"Franklin's Fiends"},\n\t        { season: 3, peak_viewers: 160 , show:"Franklin's Fiends"},\n\t        { season: 4, peak_viewers: 185 , show:"Franklin's Fiends"},\n\t        { season: 5, peak_viewers: 50  , show:"Franklin's Fiends"},\n\t        { season: 6, peak_viewers: 60  , show:"Franklin's Fiends"},\n\t        { season: 7, peak_viewers: 10  , show:"Franklin's Fiends"},\n\t        { season: 1, peak_viewers: 45 , show:"26 and Illiterate"},\n\t        { season: 2, peak_viewers: 30 , show:"26 and Illiterate"},\n\t        { season: 3, peak_viewers: 22 , show:"26 and Illiterate"},\n\t        { season: 4, peak_viewers: 15 , show:"26 and Illiterate"},\n\t        { season: 1, peak_viewers: 15 , show:"Big Bill's Bucking Buds"},\n\t        { season: 2, peak_viewers: 45 , show:"Big Bill's Bucking Buds"},\n\t        { season: 3, peak_viewers: 60 , show:"Big Bill's Bucking Buds"},\n\t        { season: 4, peak_viewers: 85 , show:"Big Bill's Bucking Buds"},\n\t        { season: 5, peak_viewers: 50 , show:"Big Bill's Bucking Buds"},\n\t        { season: 6, peak_viewers: 40 , show:"Big Bill's Bucking Buds"},\n\t        { season: 1, peak_viewers: 55 , show:"Timmy Time"},\n\t        { season: 2, peak_viewers: 125 , show:"Timmy Time"},\n\t        { season: 3, peak_viewers: 70 , show:"Timmy Time"},\n\t        { season: 4, peak_viewers: 95 , show:"Timmy Time"},\n\t        { season: 5, peak_viewers: 115 , show:"Timmy Time"},\n\t        { season: 6, peak_viewers: 60 , show:"Timmy Time"},\n\t        { season: 7, peak_viewers: 30 , show:"Timmy Time"},\n\t    ]\n\t} \n\ttitle="Viewership of Fake Shows By Season"\n\txAxisDataField="season" \n\tyAxisDataField="peak_viewers"\n\txAxisLabel="Season" \n\tyAxisLabel="Peak Viewers (10k viewer)"\n\tzAxisDataField="show"\n\tlineColor="show"\n\tinterpolation="catmull-rom"\n\tclient:load\n/>`} title="Page.astro"/>
+
+Which Produces:
+
+<LineChart2 
+    data={
+        [
+            { season: 1, peak_viewers: 300 , show:"Franklin's Fiends"},
+            { season: 2, peak_viewers: 250 , show:"Franklin's Fiends"},
+            { season: 3, peak_viewers: 160 , show:"Franklin's Fiends"},
+            { season: 4, peak_viewers: 185 , show:"Franklin's Fiends"},
+            { season: 5, peak_viewers: 50  , show:"Franklin's Fiends"},
+            { season: 6, peak_viewers: 60  , show:"Franklin's Fiends"},
+            { season: 7, peak_viewers: 10  , show:"Franklin's Fiends"},
+
+            { season: 1, peak_viewers: 45 , show:"26 and Illiterate"},
+            { season: 2, peak_viewers: 30 , show:"26 and Illiterate"},
+            { season: 3, peak_viewers: 22 , show:"26 and Illiterate"},
+            { season: 4, peak_viewers: 15 , show:"26 and Illiterate"},
+
+            { season: 1, peak_viewers: 15 , show:"Big Bill's Bucking Buds"},
+            { season: 2, peak_viewers: 45 , show:"Big Bill's Bucking Buds"},
+            { season: 3, peak_viewers: 60 , show:"Big Bill's Bucking Buds"},
+            { season: 4, peak_viewers: 85 , show:"Big Bill's Bucking Buds"},
+            { season: 5, peak_viewers: 50 , show:"Big Bill's Bucking Buds"},
+            { season: 6, peak_viewers: 40 , show:"Big Bill's Bucking Buds"},
+
+            { season: 1, peak_viewers: 55 , show:"Timmy Time"},
+            { season: 2, peak_viewers: 125 , show:"Timmy Time"},
+            { season: 3, peak_viewers: 70 , show:"Timmy Time"},
+            { season: 4, peak_viewers: 95 , show:"Timmy Time"},
+            { season: 5, peak_viewers: 115 , show:"Timmy Time"},
+            { season: 6, peak_viewers: 60 , show:"Timmy Time"},
+            { season: 7, peak_viewers: 30 , show:"Timmy Time"},
+        ]
+    } 
+    title="Viewership of Fake Shows By Season"
+    xAxisDataField="season" 
+    yAxisDataField="peak_viewers"
+    xAxisLabel="Season" 
+    yAxisLabel="Peak Viewers (10k viewer)"
+    zAxisDataField="show"
+    lineColor="show"
+    interpolation="catmull-rom"
+    client:load/>
+
+
+
+<Aside type="tip">
+    If you're working with excel spreadsheet data it's worth checking out these [utility functions](./../../../../utilities/excel/) as well, since you can chain `getDataFromSpreadsheet()` and `parseDataFromWorksheet()` to get your data into the format you need. If you have a sheet with
+    | age | weight |
+    |-----|--------|
+    | 20 | 185|
+    | 21 | 165|
+    | 22 | 172|
+
+    You could do 
+
+    <Code lang="svelte" title="myPage.svelte" code={`
+    <script>
+    import {OnMount} from "svelte"
+    import LineChart from "/path/to/components/LineChart.svelte"
+    import { getDataFromSpreadsheet, parseDataFromWorksheet} from "path/to/excel.ts"
+
+    
+    const fileURL = "/spreadsheets/myfile.xlsx"
+
+    // Get data from first sheet of myfile.xlsx
+    const data = await parseDataFromWorksheet(await getDataFromSpreadsheet(fileURL))
+    </script>
+
+    <LineChart data={data} xAxisDataField="age" yAxisDataField="weight" xAxisLabel="Age (years)" yAxisLabel="Weight (lbs)"/>
+    `}/>
+
+
+</Aside>
+
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="svelte" code={LineChartTSRaw} title="LineChart.svelte"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="svelte" code={LineChartJSRaw} title="BarChart.svelte"/>
+  </TabItem>
+</Tabs>
+

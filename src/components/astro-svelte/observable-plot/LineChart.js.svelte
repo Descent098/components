@@ -1,10 +1,10 @@
-<script lang="ts">
+<script>
     import { onMount } from "svelte";
     import * as Plot from '@observablehq/plot';
 
     let initialized = $state(false)
-    let plotEl: undefined|HTMLElement=$state(undefined);
-    let plot:string|SVGSVGElement | HTMLElement = $state("<div></div>")
+    let plotEl=$state(undefined);
+    let plot= $state("<div></div>")
 
     const {
         data,
@@ -12,12 +12,13 @@
         yAxisDataField,           // The field to use for the data for the y axis
         
         // Optional Fields
+        zAxisDataField=undefined, //
         title="",                 // The title of the chart
         subtitle="",              // The subtitle of the chart
         xAxisLabel=undefined,     // The label for the x axis
         yAxisLabel=undefined,     // The label for the y axis
-        fillDataField=undefined,  // The field to colour the bars based on (usually y value or some sort of category)
         colorConfig=undefined,    // The color configuration (PlotOptions.color) SEE https://observablehq.com/@observablehq/plot-cheatsheets-colors
+        lineColor=undefined,      // The color of the line
         domain=undefined,         // The domain (the range of numbers found in the y-axis)
         styleOverrides=undefined, // A PlotOptions.style object with any styling overrides for the chart
         width=undefined,          // The width of the chart
@@ -26,24 +27,28 @@
         sort=true,                // Whether to sort the values displayed by y vaule
         sortDescending=true,      // If sort is true, false will sort by ascending, true will be sort by descending values
         valuesOnBars=true,        // Whether to show the y-value of the bar over top of the bar
+        legend=true,              // Whether to show the color legend (only applies when z-axis is specified)
+        interpolation=undefined   // The type of interpolation to use on the line, also sometimes called the curve type
     } = $props();
 
     onMount(async ()=>{
-        
         plot = Plot.plot({
         width:width,
         height:height,
         marginTop:30,      
+        insetLeft:20,
+        insetRight:10,
         x:{label:xAxisLabel},
         y:{label:yAxisLabel},
         marks: [
-            Plot.barY(data, {x: xAxisDataField, y: yAxisDataField, sort: sort? {x: "y", reverse: sortDescending}:undefined, fill:fillDataField, tip:tooltips}),
+            Plot.line(data, {x: xAxisDataField, y: yAxisDataField, z:zAxisDataField, sort: sort? {x: "y", reverse: sortDescending}:undefined, stroke:lineColor, tip:tooltips, curve:interpolation}),
             domain ? Plot.ruleY(domain):Plot.ruleY([0]),
             Plot.axisX({marginBottom:40}),
+
             valuesOnBars?Plot.text(data, {x: xAxisDataField, y: yAxisDataField, text: (d) => (d[yAxisDataField]), dy: -6, lineAnchor: "bottom"}):undefined,
         ],
-        color:colorConfig,
         style: styleOverrides,
+        color: colorConfig? colorConfig:zAxisDataField?{legend:legend}:undefined
         })
         initialized = true
         updateComponent()
@@ -51,8 +56,6 @@
 
     function updateComponent() {
         if (!initialized || plot === undefined) return
-
-        //@ts-ignore
         if (plotEl === undefined|| plotEl===""){
             plotEl = document.createElement("div")
         }
