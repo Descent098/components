@@ -17,6 +17,7 @@ import react from "@astrojs/react";
 // https://astro.build/config
 export default defineConfig({
     base: "/components",
+    site:"https://kieranwood.ca",
     integrations: [mermaid({
         theme: "forest",
         autoTheme: true
