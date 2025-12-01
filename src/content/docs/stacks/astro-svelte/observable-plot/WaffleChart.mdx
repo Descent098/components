@@ -1,0 +1,349 @@
+---
+title: Observable Waffle Chart
+---
+
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+import WaffleChart from "@/components/astro-svelte/observable-plot/WaffleChart.ts.svelte"
+import WaffleChartTSRaw from "@/components/astro-svelte/observable-plot/WaffleChart.ts.svelte?raw"
+import WaffleChartJS from "@/components/astro-svelte/observable-plot/WaffleChart.js.svelte"
+import WaffleChartJSRaw from "@/components/astro-svelte/observable-plot/WaffleChart.js.svelte?raw"
+
+import RequiredTech from "@/components/internal/RequiredTech.astro"
+
+This component is used to help setup a waffle chart using [Observable plot](https://observablehq.com/plot/), there are options for single-quantity, multi-quantity, and multi-quantity faceted. These charts are mostly used to compare survey question response proportions
+
+## Preview
+
+### Single Quantity
+
+Use for when you want to show off a single question
+
+<WaffleChart
+    data={[
+        {
+            question:"Do you as a dentist agree I'm pog?",
+            yes:4,
+            no:5,
+            totalResponses:5
+        },
+    ]}
+    xAxisDataField="question"
+    yAxisDataField="yes"
+    totalField="totalResponses"
+    fillColor="#f0f0f0"
+    circles={false}
+    height={150}
+    columnWidth={5}
+    columnGap={2}
+    client:load
+/>
+
+### Multi-Quantity
+
+Use for when you want to show off multiple questions
+
+<WaffleChart
+    data={[
+        {
+            question:"Do you like Jazz?",
+            yes:40,
+            no:30,
+            totalResponses:70
+        },
+        {
+            question:"Do you want Lasagna?",
+            yes:195,
+            no:5,
+            totalResponses:200
+        },
+        {
+            question:"Do you want ice cream?",
+            yes:68,
+            no:102,
+            totalResponses:170
+        },
+    ]}
+    xAxisDataField="question"
+    yAxisDataField="yes"
+    totalField="totalResponses"
+    fillColor="orange"
+    columnWidth={10}
+    client:load
+/>
+*In each case there was a different number of respondents*
+
+
+### Multi-Quantity Faceted
+
+Use for when you want to show off a multiple questions that have a categorical difference for the answers
+
+<WaffleChart
+    data={[
+        {
+            question:"Do you like Pina Coladas?",
+            yes:1,
+            no:4,
+            totalResponses:5,
+            beforeDrinks:"Before Drinking"
+        },
+        {
+            question:"Do you like Getting Caught in the Rain?",
+            yes:2,
+            no:3,
+            totalResponses:5,
+            beforeDrinks: "After 1 Drink"
+        },
+        {
+            question:"Do you like making love at midnight?",
+            yes:4,
+            no:1,
+            totalResponses:5,
+            beforeDrinks: "Lost Count of Drinks"
+        },
+        
+    ]}
+    xAxisDataField="question"
+    yAxisDataField="yes"
+    zAxisDataField="beforeDrinks"
+    totalField="totalResponses"
+    fillColor="CurrentColor"
+    colorConfig={{legend:true, scheme:"Tableau10", type:"categorical", }}
+    height={125}
+    columnWidth={5}
+    columnGap={1}
+    client:load
+/>
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["astro","svelte"]} noInstall={true}/>
+
+A guide for setting up the stack can be found [here](./../../installation)
+
+Then install observable plot:
+
+```bash
+npm install @observablehq/plot
+```
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+| Name | Argument Type | Description |
+|------|---------------|-------------|
+| data | `Object[]` | The data to use for the chart. Should be a list of objects representing the rows of data (i.e. `[{x:data1, y:10, total:30}, {x:data3, y:20, total:30}]`) | 
+| xAxisDataField | `string` |  The field to use as the source for the x axis |
+| yAxisDataField | `string` |  The field to use as the source for the y axis |
+| totalField | `string` | The field that is considered the "total" to compare the y axis to |
+
+#### Optional 
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| title | `string` | `""` |   The title of the chart  |
+| subtitle | `string` | `""` |   The subtitle of the chart  |
+| zAxisDataField | `string` |  `undefined` | The field to use as the source for the z axis (category for multi-quantity faceted) |
+| colorConfig | `PlotOptions.color` | `undefined` |   The color configuration for examples see https://observablehq.com/@observablehq/plot-cheatsheets-colors (if you want to enable legend manually pass `{legend:true}` here) |
+| styleOverrides |`PlotOptions.style`  | `undefined` |  A `PlotOptions.style` object with any styling overrides for the chart   |
+| width |`int`  | `undefined` |  The width of the chart   |
+| height | `int` | `undefined` |  The of height the chart   |
+| percentageTextColor | `string` | `undefined` | The color of the text with the percentage (use CurrentColor to make it default text color) |
+| questionTextColor | `string` | `undefined` | The color of the question text (use CurrentColor to make it default text color) |
+| columnWidth | `number` | `undefined` |  The number of buckets/row |
+| circles | `boolean` | `undefined` |  If true will render as circles instead of squares |
+| columnGap | `number` | `undefined` |  The gap between each mark |
+| totalOpacity | `number` | `undefined` |  The opacity of the unfilled/total squares (that show total-yAxisDataField) |
+| totalFill | `string` | `undefined` |  The fill for the unfilled/total squares (that show total-yAxisDataField) |
+
+<Aside type="caution">Only assign `undefined` to a value if it's default value is `undefined` otherwise your plot may fail to render silently</Aside>
+
+
+### Examples
+
+### Single Quantity
+
+<Code title="Page.astro" lang="astro" code={`---\nimport WaffleChart from "../components/WaffleChart.svelte"\n---\n\n<WaffleChart
+    data={[
+        {
+            question:"Do you like digimon?",
+            yes:100,
+            no:0,
+            totalResponses:100
+        },
+    ]}
+    xAxisDataField="question"
+    yAxisDataField="yes"
+    totalField="totalResponses"
+    fillColor="#00dbd0ff"
+    circles={true}
+    height={250}
+    columnWidth={10}
+    columnGap={2}
+    client:load
+/>`}/>
+
+Which produces:
+
+<WaffleChartJS
+    data={[
+        {
+            question:"Do you like digimon?",
+            yes:100,
+            no:0,
+            totalResponses:100
+        },
+    ]}
+    xAxisDataField="question"
+    yAxisDataField="yes"
+    totalField="totalResponses"
+    fillColor="#00dbd0ff"
+    circles={true}
+    height={250}
+    columnWidth={10}
+    columnGap={2}
+    client:load
+/>
+
+### Multi-Quantity
+
+<Code title="Page.astro" lang="astro" code={`---\nimport WaffleChart from "../components/WaffleChart.svelte"\n---\n\n<WaffleChart
+    data={[
+        {
+            question:"Have You Ever Committed A Crime?",
+            yes:90,
+            total:150
+        },
+        {
+            question:"Have You Been Charged With Committing a Crime?",
+            yes:40,
+            total:155
+        },
+    ]}
+    xAxisDataField="question"
+    yAxisDataField="yes"
+    totalField="total"
+    fillColor="red"
+    percentageTextColor="currentColor"
+    questionTextColor="#0ca6f3ff"
+    columnWidth={10}
+    circles={false}
+    client:load
+/>`}/>
+
+Which produces:
+
+<WaffleChartJS
+    data={[
+        {
+            question:"Have You Ever Committed A Crime?",
+            yes:90,
+            total:150
+        },
+        {
+            question:"Have You Been Charged With Committing a Crime?",
+            yes:40,
+            total:155
+        },
+    ]}
+    xAxisDataField="question"
+    yAxisDataField="yes"
+    totalField="total"
+    fillColor="red"
+    columnWidth={10}
+    circles={false}
+    percentageTextColor="currentColor"
+    questionTextColor="#0ca6f3ff"
+    client:load
+/>
+
+
+### Multi-Quantity Faceted
+
+<Code title="Page.astro" lang="astro" code={`---\nimport WaffleChart from "../components/WaffleChart.svelte"\n---\n\n<WaffleChart
+    data={[
+        {
+            question:"Do you like Jazz?",
+            yes:10,
+            totalResponses:50,
+            beeMovie:"Before Bee Movie"
+        },
+        {
+            question:"Do you like Jazz Now?",
+            yes:20,
+            totalResponses:50,
+            beeMovie:"During Bee Movie"
+        },
+        {
+            question:"What About Now?",
+            yes:40,
+            totalResponses:50,
+            beeMovie:"After Bee Movie"
+        },
+        
+    ]}
+    xAxisDataField="question"
+    yAxisDataField="yes"
+    zAxisDataField="beeMovie"
+    totalField="totalResponses"
+    fillColor="CurrentColor"
+    colorConfig={{legend:true, scheme:"Tableau10", type:"categorical", }}
+    height={200}
+    columnWidth={10}
+    columnGap={1}
+    client:load
+/>`}/>
+
+Which produces:
+
+<WaffleChartJS
+    data={[
+        {
+            question:"Do you like Jazz?",
+            yes:10,
+            totalResponses:50,
+            beeMovie:"Before Bee Movie"
+        },
+        {
+            question:"Do you like Jazz Now?",
+            yes:20,
+            totalResponses:50,
+            beeMovie:"During Bee Movie"
+        },
+        {
+            question:"What About Now?",
+            yes:40,
+            totalResponses:50,
+            beeMovie:"After Bee Movie"
+        },
+        
+    ]}
+    xAxisDataField="question"
+    yAxisDataField="yes"
+    zAxisDataField="beeMovie"
+    totalField="totalResponses"
+    fillColor="CurrentColor"
+    colorConfig={{legend:true, scheme:"Tableau10", type:"categorical", }}
+    height={200}
+    columnWidth={10}
+    columnGap={1}
+    client:load
+/>
+
+
+
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="svelte" code={WaffleChartTSRaw} title="LineChart.svelte"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="svelte" code={WaffleChartJSRaw} title="BarChart.svelte"/>
+  </TabItem>
+</Tabs>
+
