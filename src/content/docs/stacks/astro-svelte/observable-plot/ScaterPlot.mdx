@@ -1,0 +1,263 @@
+---
+title: Observable Scatter Plot
+---
+
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+import RequiredTech from "@/components/internal/RequiredTech.astro"
+import ScatterPlotTS from "@/components/astro-svelte/observable-plot/ScatterPlot.ts.svelte"
+import ScatterPlotTSRaw from "@/components/astro-svelte/observable-plot/ScatterPlot.ts.svelte?raw"
+import ScatterPlotJS from "@/components/astro-svelte/observable-plot/ScatterPlot.js.svelte"
+import ScatterPlotJSRaw from "@/components/astro-svelte/observable-plot/ScatterPlot.js.svelte?raw"
+
+
+
+This component is used to help setup a scatter plot using [Observable plot](https://observablehq.com/plot/)
+
+
+
+## Preview
+
+<ScatterPlotTS 
+    data={[
+        {"age":22,"weight":175,"sex":"M"},
+        {"age":18,"weight":150,"sex":"F"},
+        {"age":34,"weight":162,"sex":"M"},
+        {"age":29,"weight":181,"sex":"F"},
+        {"age":47,"weight":199,"sex":"M"},
+        {"age":52,"weight":143,"sex":"F"},
+        {"age":31,"weight":212,"sex":"M"},
+        {"age":26,"weight":158,"sex":"F"},
+        {"age":41,"weight":189,"sex":"M"},
+        {"age":37,"weight":201,"sex":"F"},
+        {"age":44,"weight":170,"sex":"M"},
+        {"age":55,"weight":223,"sex":"F"},
+        {"age":63,"weight":146,"sex":"M"},
+        {"age":24,"weight":154,"sex":"F"},
+        {"age":39,"weight":198,"sex":"M"},
+        {"age":28,"weight":174,"sex":"F"},
+        {"age":33,"weight":165,"sex":"M"},
+        {"age":46,"weight":210,"sex":"F"},
+        {"age":58,"weight":192,"sex":"M"},
+        {"age":19,"weight":149,"sex":"F"},
+        {"age":27,"weight":167,"sex":"M"},
+        {"age":36,"weight":183,"sex":"F"},
+        {"age":32,"weight":195,"sex":"M"},
+        {"age":48,"weight":177,"sex":"F"},
+        {"age":50,"weight":205,"sex":"M"},
+        {"age":23,"weight":160,"sex":"F"},
+        {"age":43,"weight":222,"sex":"M"},
+        {"age":40,"weight":188,"sex":"F"},
+        {"age":57,"weight":231,"sex":"M"},
+        {"age":62,"weight":140,"sex":"F"},
+        {"age":30,"weight":172,"sex":"M"},
+        {"age":25,"weight":151,"sex":"F"},
+        {"age":38,"weight":209,"sex":"M"},
+        {"age":54,"weight":169,"sex":"F"},
+        {"age":45,"weight":216,"sex":"M"},
+        {"age":21,"weight":157,"sex":"F"},
+        {"age":35,"weight":204,"sex":"M"},
+        {"age":49,"weight":182,"sex":"F"},
+        {"age":60,"weight":237,"sex":"M"},
+        {"age":20,"weight":148,"sex":"F"},
+        {"age":29,"weight":193,"sex":"M"},
+        {"age":42,"weight":166,"sex":"F"},
+        {"age":53,"weight":208,"sex":"M"},
+        {"age":37,"weight":175,"sex":"F"},
+        {"age":24,"weight":159,"sex":"M"},
+        {"age":34,"weight":191,"sex":"F"},
+        {"age":46,"weight":213,"sex":"M"},
+        {"age":51,"weight":180,"sex":"F"},
+        {"age":61,"weight":225,"sex":"M"},
+        {"age":31,"weight":171,"sex":"F"},
+        {"age":28,"weight":178,"sex":"M"},
+        {"age":44,"weight":200,"sex":"F"},
+        {"age":56,"weight":219,"sex":"M"},
+        {"age":23,"weight":152,"sex":"F"},
+        {"age":39,"weight":185,"sex":"M"},
+        {"age":33,"weight":197,"sex":"F"},
+        {"age":47,"weight":214,"sex":"M"},
+        {"age":52,"weight":155,"sex":"F"},
+        {"age":63,"weight":228,"sex":"M"},
+        {"age":26,"weight":163,"sex":"F"},
+        {"age":32,"weight":188,"sex":"M"},
+        {"age":48,"weight":173,"sex":"F"},
+        {"age":55,"weight":211,"sex":"M"},
+        {"age":20,"weight":147,"sex":"F"},
+        {"age":41,"weight":207,"sex":"M"},
+        {"age":36,"weight":176,"sex":"F"},
+        {"age":30,"weight":196,"sex":"M"},
+        {"age":45,"weight":168,"sex":"F"},
+        {"age":59,"weight":233,"sex":"M"},
+        {"age":22,"weight":161,"sex":"F"},
+        {"age":35,"weight":203,"sex":"M"},
+        {"age":49,"weight":179,"sex":"F"},
+        {"age":60,"weight":239,"sex":"M"},
+        {"age":27,"weight":153,"sex":"F"},
+        {"age":38,"weight":190,"sex":"M"},
+        {"age":43,"weight":175,"sex":"F"},
+        {"age":54,"weight":218,"sex":"M"},
+    ]}
+    xAxisDataField="age"
+    xAxisLabel="Age (years)"
+    yAxisDataField="weight"
+    yAxisLabel="Weight (lbs)"
+    colorAttribute="sex"
+    client:load/>
+
+
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["astro","svelte"]} noInstall={true}/>
+
+A guide for setting up the stack can be found [here](./../../installation)
+
+Then install observable plot:
+
+```bash
+npm install @observablehq/plot
+```
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+| Name | Argument Type | Description |
+|------|---------------|-------------|
+| data | `Object[]` | The data to use for the chart. Should be a list of objects representing the rows of data (i.e. `[{column1Name:data1, column2Name:data2}, {column1Name:data3, column2Name:data4}]`) | 
+| xAxisDataField | `string` |  The field to use as the source for the x axis|
+| yAxisDataField | `string` |  The field to use as the source for the y axis|
+
+#### Optional 
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| title | `string` | `""` |   The title of the chart  |
+| subtitle | `string` | `""` |   The subtitle of the chart  |
+| colorAttribute | `string` |  `undefined` | The attribute to color the graph by |
+| xAxisLabel | `string` | `undefined` |  The label for the x axis   |
+| yAxisLabel | `string` | `undefined` |   The label for the y axis  |
+| dotColor | `string` | `undefined` | The color of the dots (will be overridden by colorAttribute if set) | 
+| colorConfig | `PlotOptions.color` | `undefined` |   The color configuration for examples see https://observablehq.com/@observablehq/plot-cheatsheets-colors (if you want to enable legend manually pass `{legend:true}` here) |
+| domain |`Number[]`  | `undefined` |  The domain (the range of numbers found in the y-axis)   |
+| styleOverrides |`PlotOptions.style`  | `undefined` |  A `PlotOptions.style` object with any styling overrides for the chart   |
+| width |`int`  | `undefined` |  The width of the chart   |
+| height | `int` | `undefined` |  The of height the chart   |
+| tooltips | `boolean` | `true` |   Whether to display Tooltips or not when hovering over dots  |
+| sort |`boolean`  | `true` |   Whether to sort the values displayed by y vaule  |
+| sortDescending | `boolean` | `true` |   If sort is true, false will sort by ascending, true will be sort by descending values  |
+| valuesOnDots | `boolean` | `false` |   Whether to show the y-value of the dot over top of the dot  |
+| legend | `boolean` | `true` | Whether to show the color legend (only applicable if colorAttribute is defined), if you want a legend without a colorAttribute pass `{legend:true}` to `colorConfig` |
+
+
+
+<Aside type="caution">Only assign `undefined` to a value if it's default value is `undefined` otherwise your plot may fail to render silently</Aside>
+
+
+### Examples
+
+<Code lang="astro" title="Page.astro" code={`---\nimport ScatterPlot from "../components/ScatterPlot.svelte"\n---\n
+<ScatterPlot
+    data={[
+        {"height":65,"bmi":22.1,"activity":"low"},
+        {"height":70,"bmi":26.4,"activity":"medium"},
+        {"height":61,"bmi":28.2,"activity":"high"},
+        {"height":72,"bmi":24.7,"activity":"medium"},
+        {"height":68,"bmi":30.1,"activity":"low"},
+        // Data shortened for brevity
+    ]}
+    xAxisDataField="height"
+    xAxisLabel="Height (inches)"
+    yAxisDataField="bmi"
+    yAxisLabel="BMI"
+    colorAttribute="activity"
+    client:load
+/>
+`} />
+
+Which produces:
+
+<ScatterPlotJS
+    data={[
+        {"height":65,"bmi":22.1,"activity":"low"},
+        {"height":70,"bmi":26.4,"activity":"medium"},
+        {"height":61,"bmi":28.2,"activity":"high"},
+        {"height":72,"bmi":24.7,"activity":"medium"},
+        {"height":68,"bmi":30.1,"activity":"low"},
+        {"height":74,"bmi":19.8,"activity":"high"},
+        {"height":63,"bmi":27.5,"activity":"medium"},
+        {"height":66,"bmi":23.2,"activity":"low"},
+        {"height":71,"bmi":29.0,"activity":"high"},
+        {"height":69,"bmi":25.8,"activity":"medium"},
+        {"height":64,"bmi":31.2,"activity":"low"},
+        {"height":67,"bmi":21.9,"activity":"high"},
+        {"height":62,"bmi":28.8,"activity":"medium"},
+        {"height":73,"bmi":24.5,"activity":"low"},
+        {"height":75,"bmi":27.1,"activity":"medium"},
+        {"height":60,"bmi":29.3,"activity":"high"},
+        {"height":70,"bmi":20.4,"activity":"low"},
+        {"height":71,"bmi":22.6,"activity":"high"},
+        {"height":65,"bmi":32.0,"activity":"medium"},
+        {"height":67,"bmi":25.0,"activity":"low"},
+        {"height":68,"bmi":27.7,"activity":"high"},
+        {"height":72,"bmi":23.9,"activity":"medium"},
+        {"height":74,"bmi":28.5,"activity":"low"},
+        {"height":63,"bmi":30.8,"activity":"high"},
+        {"height":61,"bmi":26.5,"activity":"medium"},
+        {"height":75,"bmi":24.1,"activity":"low"},
+        {"height":69,"bmi":31.4,"activity":"high"},
+        {"height":64,"bmi":19.9,"activity":"medium"},
+        {"height":66,"bmi":28.0,"activity":"low"},
+        {"height":62,"bmi":27.3,"activity":"high"},
+        {"height":72,"bmi":29.8,"activity":"medium"},
+        {"height":74,"bmi":22.4,"activity":"low"},
+        {"height":60,"bmi":30.9,"activity":"high"},
+        {"height":65,"bmi":25.6,"activity":"medium"},
+        {"height":70,"bmi":23.3,"activity":"low"},
+        {"height":71,"bmi":28.9,"activity":"high"},
+        {"height":63,"bmi":21.7,"activity":"medium"},
+        {"height":68,"bmi":26.0,"activity":"low"},
+        {"height":75,"bmi":29.2,"activity":"high"},
+        {"height":67,"bmi":20.8,"activity":"medium"},
+        {"height":73,"bmi":27.9,"activity":"low"},
+        {"height":61,"bmi":30.5,"activity":"high"},
+        {"height":74,"bmi":24.3,"activity":"medium"},
+        {"height":69,"bmi":22.9,"activity":"low"},
+        {"height":62,"bmi":31.7,"activity":"high"},
+        {"height":66,"bmi":29.6,"activity":"medium"},
+        {"height":72,"bmi":21.2,"activity":"low"},
+        {"height":70,"bmi":27.4,"activity":"high"},
+        {"height":64,"bmi":32.3,"activity":"medium"},
+        {"height":75,"bmi":23.8,"activity":"low"},
+        {"height":63,"bmi":28.6,"activity":"high"},
+        {"height":68,"bmi":30.0,"activity":"medium"},
+        {"height":61,"bmi":24.4,"activity":"low"},
+        {"height":74,"bmi":26.2,"activity":"high"},
+        {"height":67,"bmi":29.9,"activity":"medium"},
+        {"height":72,"bmi":25.5,"activity":"low"},
+        {"height":70,"bmi":22.0,"activity":"high"},
+        {"height":65,"bmi":30.6,"activity":"medium"}
+    ]}
+    xAxisDataField="height"
+    xAxisLabel="Height (inches)"
+    yAxisDataField="bmi"
+    yAxisLabel="BMI"
+    colorAttribute="activity"
+    client:load
+/>
+
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="svelte" code={ScatterPlotTSRaw} title="ScatterPlot.svelte"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="svelte" code={ScatterPlotJSRaw} title="ScatterPlot.svelte"/>
+  </TabItem>
+</Tabs>
+
