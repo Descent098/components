@@ -1,0 +1,172 @@
+---
+title: Media Library
+---
+import {Code, Tabs, TabItem, Aside} from "@astrojs/starlight/components"
+
+import mediaLibJSRaw from "@/components/standard/media-library.js?raw"
+import mediaLibTSRaw from "@/components/standard/media-library.ts?raw"
+
+<script type="module" set:html={mediaLibJSRaw}></script>
+
+This component is designed to help you show off media libraries such as song albums, movies, TV shows, games etc.
+
+## Preview
+
+<media-library data='[
+  {"title":"title","description":"description here","image":"/components/img/posters/skiing-girl.jpg"},
+  {"title":"title","description":"description here","image":"/components/img/posters/washington.jpg"},
+  {"title":"title 2","description":"description here","image":"/components/img/posters/keep-your-teeth-clean.jpg"},
+  {"title":"title 2","description":"description here","image":"/components/img/posters/torn-poster.jpg"},
+    {"title":"title","description":"description here","image":"/components/img/posters/skiing-girl.jpg"},
+  {"title":"title","description":"description here","image":"/components/img/posters/washington.jpg"},
+  {"title":"title 2","description":"description here","image":"/components/img/posters/keep-your-teeth-clean.jpg"},
+  {"title":"title 2","description":"description here","image":"/components/img/posters/torn-poster.jpg"},
+    {"title":"title","description":"description here","image":"/components/img/posters/skiing-girl.jpg"}
+]'
+    client:load
+
+></media-library>
+
+## Usage
+
+There are no dependencies to use this component
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+<Aside type="caution">
+When using web components attributes passed in from HTML can **only** be strings, so for non-string types you need to pass values in a `JSON.parse()` compatible format. For example on an element `my-element` imagine the attributes:
+
+- numbers which is type `Number[]`
+- data which is of type `Object[]` where object has 2 `Number`s called weight and age and a `string` called name
+
+You would do:
+
+```html
+<my-element 
+    numbers="[1,2,3,4]" 
+    data='[{"weight":205, "age":30, "name":"james"}]'
+    ></my-element>
+```
+
+If you run into issues when using a component, try chucking your string into a `JSON.parse()` and if it errors, the problem is how you're passing your data.
+</Aside>
+
+#### Required
+
+| Name | Argument Type | Description |
+|------|---------------|-------------|
+| data | `Object[]` | The data to use for the media. Should be a list of objects representing the items (i.e. `[{title:"my Movie", description:"description here", image:"url here"}, {title:"my Movie", description:"description here", image:"url here", link:"some url here"}]`) | 
+
+#### Optional
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| aspectratio | `string` | `"8/12"` |  The aspect ratio of each item |
+| initiallygreyscale | `boolean` | `true` | Whether to have the greyscale effect before hover |
+
+### Example
+
+#### Plain HTML example
+
+<Code lang="html" code={`
+<script type="module" src="path/to/media-lib.js"></script>
+
+<media-library data='[
+    {
+        "title":"My Poster",
+        "description":"description here",
+        "link":"https://unsplash.com/photos/from-maine-to-florida-cartoon-illustration-by-gordon-ross-and-published-for-puck-magazine-1911-W8mDaOq-Cyo",
+        "image":"https://images.unsplash.com/photo-1578406843598-34a4518d168d?q=80&w=733&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    },{
+        "title":"My Poster 2",
+        "description":"description here",
+        "link":"https://unsplash.com/photos/dont-mix-em-wpa-poster-hjIUR7aunAc",
+        "image":"https://images.unsplash.com/photo-1580130732455-6663b4ce9f6e?q=80&w=756&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    },
+    {
+        "title":"My Poster 3",
+        "description":"description here",
+        "image":"https://images.unsplash.com/photo-1610616817237-dff4b556cce6?q=80&w=736&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    }
+]'
+initiallygreyscale="false"
+aspectratio="9/12"
+></media-library>
+
+`} title="page.html" />
+
+Which produces:
+
+<media-library data='[
+    {
+        "title":"My Poster",
+        "description":"description here",
+        "link":"https://unsplash.com/photos/from-maine-to-florida-cartoon-illustration-by-gordon-ross-and-published-for-puck-magazine-1911-W8mDaOq-Cyo",
+        "image":"/components/img/posters/puck.jpg"
+    },{
+        "title":"My Poster 2",
+        "description":"description here",
+        "link":"https://unsplash.com/photos/dont-mix-em-wpa-poster-hjIUR7aunAc",
+        "image":"/components/img/posters/gas-n-whisky.jpg"
+    },
+    {
+        "title":"My Poster 3",
+        "description":"description here",
+        "image":"/components/img/posters/robo-boi.jpg"
+    }
+]'
+initiallygreyscale="false"
+aspectratio="9/12"
+></media-library>
+
+
+#### Astro Example
+
+
+
+<Code lang="astro" code={`---\nimport MediaLibraryScriptRaw from "../components/media-library.js?raw"\n---\n\n<script type="module" set:html={mediaLibJSRaw}></script>\n\n<media-library data='[
+    {
+        "title":"My Poster",
+        "description":"description here",
+        "image":"https://images.unsplash.com/photo-1544733422-251e532ca221?q=80&w=721&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    },
+    {
+        "title":"My Poster 2",
+        "description":"description here",
+        "image":"https://images.unsplash.com/photo-1614451604886-1217d9494a99?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    }
+]'
+aspectratio="12/9"
+></media-library>`} title="Page.astro"/>
+
+Which produces:
+
+<media-library data='[
+    {
+        "title":"My Poster",
+        "description":"description here",
+        "image":"/components/img/posters/splattered-colors.jpg"
+    },
+    {
+        "title":"My Poster 2",
+        "description":"description here",
+        "image":"/components/img/posters/karate.jpg"
+    }
+]'
+aspectratio="12/9"
+></media-library>
+
+
+## Component Code
+
+<Tabs>
+  <TabItem label="Javscript">
+    <Code lang="javascript" code={mediaLibJSRaw} title="media-lib.js"/>
+  </TabItem>
+  <TabItem label="Typescript">
+    <Code lang="typescript" code={mediaLibTSRaw} title="media-lib.ts"/>
+  </TabItem>
+</Tabs>
+
