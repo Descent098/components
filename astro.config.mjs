@@ -115,7 +115,7 @@ export default defineConfig({
             starlightBlog({
                 authors: {
                     kieran: {
-                        name: "kieran",
+                        name: "Kieran Wood",
                         title: "descent098",
                         url: "https://github.com/descent098",
                         picture: "/img/profile-pic.webp"
