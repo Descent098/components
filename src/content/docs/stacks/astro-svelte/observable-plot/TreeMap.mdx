@@ -1,0 +1,151 @@
+---
+title: Observable Tree Map
+sidebar:
+    order: 135
+---
+
+import {Image} from "astro:assets"
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+import RequiredTech from "@/components/internal/RequiredTech.astro"
+import FailedDiagram from "@/assets/guides/astro-svelte/observable-plot/tree-diagram-bad.png"
+import SuccessfulDiagram from "@/assets/guides/astro-svelte/observable-plot/tree-diagram-compromise.png"
+import TreeMapTS from "@/components/astro-svelte/observable-plot/TreeMap.ts.svelte"
+import TreeMapTSRaw from "@/components/astro-svelte/observable-plot/TreeMap.ts.svelte?raw"
+import TreeMap from "@/components/astro-svelte/observable-plot/TreeMap.js.svelte"
+import TreeMapJSRaw from "@/components/astro-svelte/observable-plot/TreeMap.js.svelte?raw"
+
+This component is used to help setup a tree map using [Observable plot](https://observablehq.com/plot/), these are for showing clean heirarchical data such as file trees, etc.
+
+<Aside type="caution">
+This component is not good for data that will have shared parents, like family trees, since a relationship like this:
+
+<Image src={FailedDiagram} alt="Family tree diagram"/>
+
+Parent 2 and Parent 3 have the same Grandparent (Grandparent 4), the best you could do to represent this is:
+
+```js
+data = [
+    "GrandParent 3 & GrandParent 4/Parent 2",
+    "Grandparent 4 & GrandParent 5/Parent 3"
+]
+```
+
+Which would look something like this:
+
+<Image src={SuccessfulDiagram} alt="Family tree diagram"/>
+
+Making it hard to see that Parent 2 & 3 share a relationship to GrandParent 4
+</Aside>
+
+## Preview
+
+<TreeMapTS 
+    data={[
+        "/",
+        "/API",
+        "/UI",
+        "/API/routes.py",
+        "/API/models.py",
+        "/UI/package.json",
+        "/UI/index.js",
+    ]}
+    width={700}
+    height={500}
+    lineColor="orange"
+    client:load
+/>
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["astro","svelte"]} noInstall={true}/>
+
+A guide for setting up the stack can be found [here](./../../installation)
+
+Then install observable plot:
+
+```bash
+npm install @observablehq/plot
+```
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+| Name | Argument Type | Description |
+|------|---------------|-------------|
+| data | `Object[]` | The data to use for the chart. Should be a list of objects representing the rows of data (i.e. `["root","root/child 1", "root/child 2", "root/child 1/leaf 1", root/child 2/leaf 2]`) | 
+
+#### Optional 
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| title | `string` | `""` |   The title of the chart  |
+| subtitle | `string` | `""` |   The subtitle of the chart  |
+| lineColor | `string` | `undefined` | The color to use for the line (i.e. `blue`, `red`, etc.), or the column label to color lines by | 
+| textStrokeColor | `string` | `black` | The color to use for the stroke of the text | 
+| colorConfig | `PlotOptions.color` | `undefined` |   The color configuration for examples see https://observablehq.com/@observablehq/plot-cheatsheets-colors (if you want to enable legend manually pass `{legend:true}` here) |
+| styleOverrides |`PlotOptions.style`  | `undefined` |  A `PlotOptions.style` object with any styling overrides for the chart   |
+| width |`int`  | `undefined` |  The width of the chart   |
+| height | `int` | `undefined` |  The of height the chart   |
+| tooltips | `boolean` | `true` |   Whether to display Tooltips or not when hovering over entries  |
+| delimiter | `string` | `/` | The demiliter to define relationships with | 
+| strokeWidth | `int` | `1` | The width of the line and text stroke | 
+
+<Aside type="caution">Only assign `undefined` to a value if it's default value is `undefined` otherwise your plot may fail to render silently</Aside>
+
+
+### Examples
+
+<Code title="Page.astro" lang="astro" code={`---\nimport TreeMap from "../components/TreeMap.svelte"\n---\n
+<TreeMap
+    data={[
+        "/",
+        "/home",
+        "/home/Desktop",
+        "/home/Pictures",
+        "/home/Downloads",
+        "/home/usr",
+        "/home/usr/bin",
+    ]}
+    width={800}
+    height={500}
+    lineColor="green"
+    strokeWidth={3}
+    client:load
+/>
+`} />
+
+which produces:
+
+<TreeMap
+    data={[
+        "/",
+        "/home",
+        "/home/Desktop",
+        "/home/Pictures",
+        "/home/Downloads",
+        "/home/usr",
+        "/home/usr/bin",
+    ]}
+    width={800}
+    height={500}
+    lineColor="green"
+    strokeWidth={3}
+    client:load
+/>
+
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="svelte" code={TreeMapTSRaw} title="TreeMap.svelte"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="svelte" code={TreeMapJSRaw} title="TreeMap.svelte"/>
+  </TabItem>
+</Tabs>
+
