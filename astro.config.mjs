@@ -66,7 +66,14 @@ export default defineConfig({
                         },
                         {
                             label: 'Astro Svelte',
-                            autogenerate: { directory: 'stacks/astro-svelte' },
+                            items:[
+                                {label:"About the stack", link:"stacks/astro-svelte/"},
+                                {label:"Installation", link:"stacks/astro-svelte/installation"},
+                                {label:"QR Code", link:"stacks/astro-svelte/QRCode"},
+                                {label:"Editors", autogenerate:{directory:"stacks/astro-svelte/editors"}},
+                                {label:"Editors", autogenerate:{directory:"stacks/astro-svelte/editors"}},
+                                {label:"Observable Plot", autogenerate:{directory:"stacks/astro-svelte/observable-plot"}},
+                            ],
                         },
                         {
                             label: 'React Tailwind',
