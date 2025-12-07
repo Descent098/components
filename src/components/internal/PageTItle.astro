@@ -1,23 +1,13 @@
 ---
+import Default from '@astrojs/starlight/components/PageTitle.astro';
 import QRCode from "@/components/astro-svelte/qr-code.ts.svelte"
 ---
 
-<h1 id="_top">{Astro.locals.starlightRoute.entry.data.title} </h1><br> <QRCode qrColorVariable="--sl-color-text"
+<Default>
+
+</Default><br> <QRCode qrColorVariable="--sl-color-text"
     backgroundColorVariable="--sl-color-bg"
 	link={Astro.site+ Astro.url.pathname.slice(1)} 
 	scale="2"
 	error="Q"
 client:load/>
-
-<style>
-	@layer starlight.core {
-		h1 {
-			margin-top: 1rem;
-			font-size: var(--sl-text-h1);
-			line-height: var(--sl-line-height-headings);
-			font-weight: 600;
-			color: var(--sl-color-white);
-			padding-right:.5rem;
-		}
-	}
-</style>
