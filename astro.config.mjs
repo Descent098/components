@@ -111,7 +111,7 @@ export default defineConfig({
                         name: "kieran",
                         title: "descent098",
                         url: "https://github.com/descent098",
-                        picture: "src/assets/profile-pic.webp"
+                        picture: "/img/profile-pic.webp"
                     },
                 },
             }),
