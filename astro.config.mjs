@@ -128,8 +128,8 @@ export default defineConfig({
         ],
         components: {
             // Override the default `Sidebar` component with a custom one.
-            Sidebar: '/src/components/internal/Sidebar.astro',
-            PageTitle:"/src/components/internal/PageTitle.astro",
+            Sidebar: 'src/components/internal/Sidebar.astro',
+            PageTitle:"src/components/internal/PageTitle.astro",
         },
 
     }), svelte(), react()],
