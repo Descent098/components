@@ -1,0 +1,89 @@
+---
+title: QR Code Generator
+---
+import QRCodeGenerator from "@/components/astro-svelte/editors/qr-code-editor.ts.svelte"
+import QRCodeGeneratorTSRaw from "@/components/astro-svelte/editors/qr-code-editor.ts.svelte?raw"
+
+
+import QRCodeGeneratorJS from "@/components/astro-svelte/editors/qr-code-editor.js.svelte"
+import QRCodeGeneratorJSRaw from "@/components/astro-svelte/editors/qr-code-editor.js.svelte?raw"
+
+import RequiredTech from "@/components/internal/RequiredTech.astro"
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+
+
+
+This editor is designed to make it easy for you to generate QR Codes.
+
+## Preview
+
+<QRCodeGenerator 
+    title=""
+client:load/>
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["astro","svelte"]} noInstall={true} noTitle={true}/>
+
+A guide for setting up the stack can be found [here](./../../installation)
+
+Then install qrcode to generate the QR codes:
+
+```bash
+npm install qrcode
+```
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+There are no required props for this component
+
+#### Optional 
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| link | `string` | `"https://"` | The default URL you want to link to with the QR code | 
+| qrColor | `string` | `"#141414"` | The default color to use for the QR code |
+| backgroundColor | `string` | `"#f0f0f0"` | The default color to use for the background of the QR Code |
+| scale | `string\|Number` | `4` | The default number to scale up (or down) the image by |
+| error | ` "L" \| "M" \| "H" \| "Q" ` | `"M"` | The default error type to use |
+| version | `Number` (0-40) | `undefined` | The default QR version to use (`undefined` is auto) |
+| maskPattern | `Number` (0-7) | `undefined` | The default mask pattern to use (`undefined` is auto) |
+
+### Examples
+
+<Code lang="astro" title="Page.astro" code={`---\nimport QRCodeGenerator from "../components/qr-code-generator.svelte"\n---\n<QRCodeGenerator
+    title="These are terrible colors"
+    link="https://kieranwood.ca/components/stacks/astro-svelte/editors/qr-code-generator/"
+    scale="8"
+    qrColor="#47d6ab"
+    backgroundColor="#585858"
+ client:load/>\n`}/>
+
+ Which produces
+
+<QRCodeGeneratorJS
+    title="These are terrible colors"
+    link="https://kieranwood.ca/components/stacks/astro-svelte/editors/qr-code-generator/"
+    scale="8"
+    qrColor="#47d6ab"
+    backgroundColor="#585858"
+ client:load/>
+
+ 
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="svelte" code={QRCodeGeneratorTSRaw} title="qr-code-generator.svelte"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="svelte" code={QRCodeGeneratorJSRaw} title="qr-code-generator.svelte"/>
+  </TabItem>
+</Tabs>
+
