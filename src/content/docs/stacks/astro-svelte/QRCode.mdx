@@ -1,0 +1,154 @@
+---
+title: QR Code
+sidebar:
+    order: 3
+---
+
+import QRCode from "@/components/astro-svelte/qr-code.ts.svelte"
+import QRCodeTSRaw from "@/components/astro-svelte/qr-code.ts.svelte?raw"
+
+import QRCodeJS from "@/components/astro-svelte/qr-code.js.svelte"
+import QRCodeJSRaw from "@/components/astro-svelte/qr-code.js.svelte?raw"
+
+import RequiredTech from "@/components/internal/RequiredTech.astro"
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+
+This component is used to generate QR codes for shortened URL's, such as the ones you see on every page
+
+<Aside type="caution">
+    This was tested for use with URL shortening, if you need fancier use cases such as binary chunking (for PDFs) or anything more complicated, you can use this component as a base, but you will need to **build out your own functionality** from it
+</Aside>
+
+<script is:inline set:html={`getComputedStyle(document.documentElement).getPropertyValue("--sl-color-white").trim()`}></script>
+
+
+## Preview
+
+<div class="flex items-center justify-center align-center">
+<QRCode
+    link="https://kieranwood.ca/components/stacks/astro-svelte/qrcode/"
+    qrColorVariable="--sl-color-text"
+    backgroundColorVariable="--sl-color-bg"
+    scale="8"
+ client:load/>
+
+<QRCode
+    link="https://kieranwood.ca/components/stacks/astro-svelte/qrcode/"
+    scale="8"
+ client:load/>
+</div>
+
+*These are two different QR codes that point to the same page*
+
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["astro","svelte"]} noInstall={true}/>
+
+A guide for setting up the stack can be found [here](./../../installation)
+
+Then install the `qrcode` package:
+
+```bash
+npm install qrcode
+```
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+| Name | Argument Type | Description |
+|------|---------------|-------------|
+| link | `string` | The URL you want to link to with the QR code | 
+
+#### Optional 
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| qrColor | `string` | `"#141414"` | The color to use for the QR code |
+| qrColorVariable | `string` | `""` | The CSS variable to track and use for the `qrColor` |
+| backgroundColor | `string` | `"#f0f0f0"` | The color to use for the background of the QR Code |
+| backgroundColorVariable | `string` | `""` | The CSS variable to track and use for the `backgroundColor` |
+| scale | `string\|Number` | `4` | The number to scale up (or down) the image by |
+| error | ` "L" \| "M" \| "H" \| "Q" ` | `"M"` | The error type to use |
+| version | `Number` (0-40) | `undefined` | The QR version to use (`undefined` is auto) |
+| maskPattern | `Number` (0-7) | `undefined` | The mask pattern to use (`undefined` is auto) |
+
+
+<Aside type="note">
+- To make background transparent use `#0000000`, the value nust be a hex value so `transprent` will not work
+- When using `qrColorVariable` and `backgroundColorVariable`:
+    - use the variable names (what you would use `var()` for in CSS), so if you have a css variable called `--s1-color-bg` you would use `--s1-color-bg` with the dashes
+    - Activates when on the **document** the following attributes are modified/updated:
+        - class;
+        - data-theme; Such as what tailwindCSS/daisyUI do
+        - style; A style attribute on the document is explictly updated (this should catch changes in `:root{}` as well)
+- If you are using `error` keep in mind that this effects the [amount of data that can be encoded](https://www.npmjs.com/package/qrcode#qr-code-capacity), and [how much error resistance you have](https://www.npmjs.com/package/qrcode#error-correction-level)
+- For most users you **should not touch** `version` or `maskPattern` should not be changed from undefined, the defaults tend to be the best
+
+</Aside>
+
+### Examples
+
+#### Flat colors
+
+<Code lang="astro" title="Page.astro" code={`---\nimport QRCode from "../components/qr-code.svelte"\n---\n<QRCode
+    link="https://kieranwood.ca/components/stacks/astro-svelte/qrcode/"
+    scale="8"
+    qrColor="#000"
+    backgroundColor="#FFF"
+ client:load/>\n`}/>
+
+ Which produces
+
+<QRCodeJS
+    link="https://kieranwood.ca/components/stacks/astro-svelte/qrcode/"
+    scale="8"
+    qrColor="#000"
+    backgroundColor="#FFF"
+ client:load/>
+
+
+#### Watch variables
+
+If you want to watch CSS variables and use those, you can do the following:
+
+<Code lang="astro" title="Page.astro" code={`---\nimport QRCode from "../components/qr-code.svelte"\n---\n<QRCode
+    link="https://kieranwood.ca/components/stacks/astro-svelte/qrcode/"
+    qrColorVariable="--sl-color-text"
+    backgroundColorVariable="--sl-color-bg"
+    scale="8"
+ client:load/>\n`}/>
+
+<Aside type="note">
+This site uses [tailwindCSS](https://tailwindcss.com/) + [starlight](https://starlight.astro.build/), so the text color value is stored in `--sl-color-text` and the background is stored in `--sl-color-bg`, which is why this works, you'll neeed to change this for your setup
+</Aside>
+
+Which produces:
+
+
+<QRCodeJS
+    link="https://kieranwood.ca/components/stacks/astro-svelte/qrcode/"
+    qrColorVariable="--sl-color-text"
+    backgroundColorVariable="--sl-color-bg"
+    scale="8"
+ client:load/>
+
+
+
+
+
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="svelte" code={QRCodeTSRaw} title="qr-code.svelte"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="svelte" code={QRCodeJSRaw} title="qr-code.svelte"/>
+  </TabItem>
+</Tabs>
