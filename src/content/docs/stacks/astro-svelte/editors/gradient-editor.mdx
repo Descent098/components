@@ -1,0 +1,81 @@
+---
+title: CSS Gradient Generator
+---
+import GradientEditor from "@/components/astro-svelte/editors/gradientEditor.ts.svelte"
+import GradientEditorTSRaw from "@/components/astro-svelte/editors/gradientEditor.ts.svelte?raw"
+import GradientEditorJS from "@/components/astro-svelte/editors/gradientEditor.js.svelte"
+import GradientEditorJSRaw from "@/components/astro-svelte/editors/gradientEditor.js.svelte?raw"
+
+
+
+import RequiredTech from "@/components/internal/RequiredTech.astro"
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+
+
+
+This editor is designed to make it easy for you to generate QR Codes.
+
+## Preview
+
+<GradientEditor 
+client:load/>
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["astro","svelte"]} noInstall={true} noTitle={true}/>
+
+A guide for setting up the stack can be found [here](./../../installation)
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+There are no required props for this component
+
+#### Optional 
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| color1 | `string` | ` "#3f5efb"` | ... |
+| color2 | `string` | `"#fc466b"` | ... |
+| colorPercentage1 | `Number` | `0` | ... |
+| colorPercentage2 | `Number` | `100` | ... |
+| gradientType | `"linear-gradient"\|"radial-gradient` | `"linear-gradient"` | ... |
+| angle | `Number` | `166` | ... |
+
+### Examples
+
+<Code lang="astro" title="Page.astro" code={`---\nimport GradientEditor from "../components/gradientEditor.svelte"\n---\n<GradientEditor
+    color1="#0bfafe"
+    color2="#64e34a"
+    colorPercentage1={25}
+    colorPercentage2={70}
+    angle={206}
+ client:load/>\n`}/>
+
+ Which produces
+
+<GradientEditorJS
+    color1="#0bfafe"
+    color2="#64e34a"
+    colorPercentage1={25}
+    colorPercentage2={70}
+    angle={206}
+ client:load/>
+
+ 
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="svelte" code={GradientEditorTSRaw} title="gradientEditor.svelte"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="svelte" code={GradientEditorJSRaw} title="gradientEditor.svelte"/>
+  </TabItem>
+</Tabs>
+
