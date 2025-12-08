@@ -17,7 +17,7 @@ import react from "@astrojs/react";
 // https://astro.build/config
 export default defineConfig({
     base: "/components",
-    site:"https://kieranwood.ca",
+    site: "https://kieranwood.ca",
     integrations: [mermaid({
         theme: "forest",
         autoTheme: true
@@ -66,13 +66,12 @@ export default defineConfig({
                         },
                         {
                             label: 'Astro Svelte',
-                            items:[
-                                {label:"About the stack", link:"stacks/astro-svelte/"},
-                                {label:"Installation", link:"stacks/astro-svelte/installation"},
-                                {label:"QR Code", link:"stacks/astro-svelte/QRCode"},
-                                {label:"Editors", autogenerate:{directory:"stacks/astro-svelte/editors"}},
-                                {label:"Editors", autogenerate:{directory:"stacks/astro-svelte/editors"}},
-                                {label:"Observable Plot", autogenerate:{directory:"stacks/astro-svelte/observable-plot"}},
+                            items: [
+                                { label: "About the stack", link: "stacks/astro-svelte/" },
+                                { label: "Installation", link: "stacks/astro-svelte/installation" },
+                                { label: "QR Code", link: "stacks/astro-svelte/qr-code" },
+                                { label: "Editors", autogenerate: { directory: "stacks/astro-svelte/editors" } },
+                                { label: "Observable Plot", autogenerate: { directory: "stacks/astro-svelte/observable-plot" } },
                             ],
                         },
                         {
@@ -136,7 +135,7 @@ export default defineConfig({
         components: {
             // Override the default `Sidebar` component with a custom one.
             Sidebar: 'src/components/internal/Sidebar.astro',
-            PageTitle:"src/components/internal/PageTitle.astro",
+            PageTitle: "src/components/internal/PageTitle.astro",
         },
 
     }), svelte(), react()],

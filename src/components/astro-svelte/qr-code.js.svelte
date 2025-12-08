@@ -2,34 +2,32 @@
     import { onMount } from "svelte";
     import QRCode from "qrcode";
 
-    let { 
-        link, 
+    let {
+        link,
         qrColor = "#141414",
-        qrColorVariable="",
+        qrColorVariable = "",
         backgroundColor = "#f0f0f0",
-        backgroundColorVariable="",
-        scale="4",
+        backgroundColorVariable = "",
+        scale = "4",
         /**@type {"L" | "M" | "H" | "Q"}*/
-        error="M",
-        version=undefined,    // 0-40
-        maskPattern=undefined // 0-7
+        error = "M",
+        version = undefined, // 0-40
+        maskPattern = undefined, // 0-7
     } = $props();
 
-    /**@type {HTMLCanvasElement}*/
-    let dataElement;
     /**@type {MutationObserver}*/
     let observer;
 
     function getCurrentQRColor() {
         if (qrColorVariable) {
-            return getCSSVarValue(qrColorVariable)
+            return getCSSVarValue(qrColorVariable);
         }
         return qrColor ?? "#141414";
     }
 
     function getCurrentBackgroundColor() {
         if (backgroundColorVariable) {
-            return getCSSVarValue(backgroundColorVariable)
+            return getCSSVarValue(backgroundColorVariable);
         }
         return backgroundColor ?? "#f0f0f0";
     }
@@ -40,43 +38,42 @@
             .trim();
     }
 
-
-    onMount(()=>{
+    onMount(() => {
         // If using variable, observe CSS changes
         if (qrColorVariable || backgroundColorVariable) {
             observer = new MutationObserver(() => {
-                qrColor = getCurrentQRColor()
-                backgroundColor = getCurrentBackgroundColor()
+                qrColor = getCurrentQRColor();
+                backgroundColor = getCurrentBackgroundColor();
             });
             observer.observe(document.documentElement, {
                 attributes: true,
-                attributeFilter: ["style", "class", "data-theme"]
+                attributeFilter: ["style", "class", "data-theme"],
             });
-            qrColor = getCurrentQRColor()
-            backgroundColor = getCurrentBackgroundColor()
+            qrColor = getCurrentQRColor();
+            backgroundColor = getCurrentBackgroundColor();
         }
-    })
+    });
+</script>
 
-    $effect(() => {
-
-            QRCode.toCanvas(dataElement, link, {
-                errorCorrectionLevel:error,
-                scale:parseFloat(scale),
+<canvas
+    {@attach (canvas) => {
+        $effect(
+            QRCode.toCanvas(canvas, link, {
+                errorCorrectionLevel: error,
+                scale: parseFloat(scale),
                 color: {
                     dark: qrColor,
                     light: backgroundColor,
                 },
-                maskPattern:parseInt(maskPattern),
-                version:version
-            });
-        }
-    )
-</script>
-
-<canvas bind:this={dataElement}></canvas>
+                maskPattern: parseInt(maskPattern),
+                version: version,
+            }),
+        );
+    }}
+></canvas>
 
 <style>
     canvas {
-        width:100%;
+        width: 100%;
     }
 </style>
