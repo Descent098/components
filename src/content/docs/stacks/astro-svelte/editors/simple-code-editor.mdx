@@ -1,0 +1,135 @@
+---
+title: Simple Code Editor
+
+---
+
+import RequiredTech from "@/components/internal/RequiredTech.astro"
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+import SimpleEditor from "@/components/astro-svelte/editors/simpleCodeEditor.ts.svelte"
+import SimpleEditorTSRaw from "@/components/astro-svelte/editors/simpleCodeEditor.ts.svelte?raw"
+import SimpleEditorJS from "@/components/astro-svelte/editors/simpleCodeEditor.js.svelte"
+import SimpleEditorJSRaw from "@/components/astro-svelte/editors/simpleCodeEditor.js.svelte?raw"
+import JSEditor from "@/components/astro-svelte/editors/jsEditor.svelte"
+
+This component is designed to make it easy to create a code editor with syntax highlighting, powered by [codemirror](https://codemirror.net/)
+
+## Preview
+
+<SimpleEditor 
+    fileTitle="📄myfile.html"
+client:load/>
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["astro", "svelte"]} noInstall={true}/>
+
+A guide for setting up the stack can be found [here](./../installation)
+
+Additionally you will need the following codemirror dependencies:
+
+```bash
+npm install codemirror @codemirror/state @codemirror/lang-html @emmetio/codemirror6-plugin @uiw/codemirror-theme-gruvbox-dark 
+```
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+There are no required props for this component
+
+#### Optional
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| fileTitle | `string` | `""` | A file title to show above the editor | 
+| language | `LanguageSupport` | `html` | The language being used (controls intellisense) | 
+| initialData | `EmmetKnownSyntax \| string;` | `"<h1>Hello World</h1>"` | The data to show when the editor loads | 
+| emmetAbreviationsLanguage | `string` | `"html"` | Enables [emmet](https://www.theodinproject.com/lessons/node-path-intermediate-html-and-css-emmet) abbreviations for the language you specify, see notes for details | 
+| theme | `Extension` | `gruvboxDark` | The theme to use, you can find a bunch [here](https://www.npmjs.com/package/@uiw/codemirror-themes?activeTab=dependents) or [here](https://thememirror.net/) | 
+| contentStore | `undefined \| string[]` | `undefined` | Allows you to get data out of the editor. Pass in `$state([""])`, see notes for details | 
+
+<Aside type="note">
+    - Additional `language` support can be installed from [these packages](https://codemirror.net/#:~:text=around%20the%20project.-,Language%20Support,-A%20full%20parser)
+    - Additional `emmetAbreviationsLanguage` is available from [@emmetio/codemirror6-plugin](https://github.com/emmetio/codemirror6-plugin) pass a string with one of [these](https://github.com/emmetio/codemirror6-plugin?tab=readme-ov-file#notes-on-document-syntax:~:text=Some%20common%20syntaxes%3A). Pass `undefined` to disable
+    - You can install additional themes such as from [here](https://www.npmjs.com/package/@uiw/codemirror-themes?activeTab=dependents) or [here](https://thememirror.net/), you then pass them as the theme variable, (i.e.)
+    ```svelte
+    <script>
+    import SimpleCodeEditor from "../components/SimpleCodeEditor.svelte"
+    import { gruvboxDark } from "@uiw/codemirror-theme-gruvbox-dark";
+    </script>
+
+    <SimpleCodeEditor theme={gruvboxDark}/>
+    ```
+    - For `contentStore`, you must pass in an array of strings that is reactive. This is because regular strings are immutable, so references can't be updated properly without doing this a minimal example with a wrapper svelte component is:
+    
+    ```svelte
+    <script>
+    import SimpleCodeEditor from "../components/SimpleCodeEditor.svelte"
+    const variable = $state([""])
+    
+    $effect(()=>{
+        // Will console.log contents of editor on change
+        let editorContent = $state.snapshot(variable[0])
+        console.log(editorContent)
+    })
+    </script>
+
+    <SimpleCodeEditor contentStore={variable}/>
+    ```
+
+</Aside>
+
+### Example
+
+#### Basic Usage
+
+<Code lang="astro" title="Page.astro" code={`---\nimport SimpleEditor from "../components/simple-editor.svelte"\n---\n<SimpleEditor 
+    fileTitle="📄myfile.html"
+    initialData={\`<!DOCTYPE html>\n<html lang="en">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>Document</title>\n</head>\n<body>\n\t<h1>Hello World</h1>\n</body>\n</html>\`}
+client:load/>`}/>
+
+Which produces:
+
+<SimpleEditor 
+    fileTitle="📄myfile.html"
+    initialData={`<!DOCTYPE html>\n<html lang="en">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>Document</title>\n</head>\n<body>\n\t<h1>Hello World</h1>\n</body>\n</html>`}
+client:load/>
+
+#### Custom Languages & Themes
+
+<Aside type="caution">
+Astro **cannot** serialize functions, so custom languages and themes (which have functions) are not possible with astro. You can modify the function to instead pass a string, which then calls the function inside svelte, or you can write a wrapper component in svelte
+
+The below example is using a svelte wrapper component to add a custom language (the same principle for themes, just pass it to the theme variable instead)
+</Aside>
+
+<Code lang="svelte" title="jsEditor.svelte" code={`<script>\nimport { javascript } from "@codemirror/lang-javascript";\nimport SimpleEditor from "../components/simple-editor.svelte"\n</script>\n<SimpleEditor 
+    fileTitle="📄myfile.js"
+    initialData={\`function helloWorld(){
+    console.log("Hello World!")
+    }\`}
+    language={javascript}
+/>`}
+/>
+
+<Code lang="astro" title="Page.astro" code={`---\nimport JSeditor from "../components/jsEditor.svelte"\n---\n<JSeditor client:load/>`}
+/>
+
+Which produces:
+
+<JSEditor client:load/>
+
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="svelte" code={SimpleEditorTSRaw} title="simple-code-editor.svelte"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="svelte" code={SimpleEditorJSRaw} title="simple-code-editor.svelte"/>
+  </TabItem>
+</Tabs>
