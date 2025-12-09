@@ -1,0 +1,107 @@
+---
+title: Webpage Editor
+---
+
+import RequiredTech from "@/components/internal/RequiredTech.astro"
+import {Code, Aside, Tabs, TabItem} from "@astrojs/starlight/components"
+import WebEditor from "@/components/astro-svelte/editors/webEditor.ts.svelte"
+import WebEditorTSRaw from "@/components/astro-svelte/editors/webEditor.ts.svelte?raw"
+import WebEditorJS from "@/components/astro-svelte/editors/webEditor.js.svelte"
+import WebEditorJSRaw from "@/components/astro-svelte/editors/webEditor.js.svelte?raw"
+
+This component is a simple way to give you an editor to build webpages in browser, designed for courses
+
+## Preview
+
+Try out the editor below:
+
+<WebEditor 
+    htmlData={[`<h1>Hello World</h1>\n<button onclick="altertUser()">click me to alert</button>`]}
+    cssData={[`html{\n\tbackground:black;\n}\nh1{\n\ttfont-family:system-ui;\n\tfont-size:1.5rem;\n\tcolor:white;\n}`]}
+    jsData={[`function altertUser(){\n\talert("Hello from the iframe")\n}`]}
+
+client:load/>
+
+
+## Usage
+
+In order to use this component you will need
+
+<RequiredTech technologies={["astro", "svelte"]} noInstall={true}/>
+
+A guide for setting up the stack can be found [here](./../installation)
+
+Additionally you will need 
+
+1. The [simple code editor component](./simple-code-editor)
+2. The following codemirror dependencies (includes the [simple code editor component](./simple-code-editor) dependencies):
+
+```bash
+npm install codemirror @codemirror/state @codemirror/lang-html @codemirror/lang-css @codemirror/lang-javascript @emmetio/codemirror6-plugin @uiw/codemirror-theme-gruvbox-dark 
+```
+
+### Props
+
+Below are the props you can pass to the component to control it's behaviour.
+
+#### Required
+
+There are no required props for this component
+
+
+#### Optional
+
+| Name | Argument Type | Default Value | Description |
+|------|---------------|---------------|-------------|
+| htmlData | `string[]` | `[""]` |  The initial data for HTML (when `separateTabs` is true, this is the only value used) |
+| cssData | `string[]` | `[""]` |  The initial data for css |
+| jsData | `string[]` | `[""]` |  The initial data for js |
+| separateTabs | `boolean` | `true` | Whether to separate tabs for HTML, CSS and JS, or just an HTML tab (when true, only `htmlData` is read) | 
+| backgroundColor | `string` | `#141414` | The color to use for the tabs |
+
+<Aside type="note">
+    - `htmlData`,`cssData` and `jsData` are an array of strings, where the first item is the value you want (i.e. for `htmlData` something like `["<h1> Hello world"]`), this is because regular strings are immutable so they cannot be binded properly down the component tree
+</Aside>
+
+### Example
+
+#### Separate Tabs
+<Code lang="astro" title="Page.astro" code={`---\nimport WebEditor from "../components/webpage-editor.svelte"\n---\n<WebEditor 
+    htmlData={[\`<h1>Cards</h1>\n<button onclick="add()">Click to Add A Card</button>\n<div id="cards"></div>\`]}
+    cssData={[\`html{\n\tbackground:black;\n}\nh1{\n\tfont-family:system-ui;\n\tfont-size:1.5rem;\n\tcolor:white;\n}\n#cards{\n\tdisplay:flex;\n\tflex-direction:rows;\n}\n.card{\n\tborder-radius:1.1rem;\n\tbackground:#f0f0f0;\n\tcolor:#141414;\n\tpadding:1rem;\n\twidth:150px;\n}\`]}
+    jsData={[\`function add(){ \n\tdocument.getElementById("cards").innerHTML += '<div class="card"><h3>title</h3><p>Content</p></div>' \n}\`]}
+client:load/>`}/>
+
+Which produces:
+
+<WebEditorJS 
+    htmlData={[`<h1>Cards</h1>\n<button onclick="add()">Click to Add A Card</button>\n<div id="cards"></div>`]}
+    cssData={[`html{\n\tbackground:black;\n}\nh1{\n\tfont-family:system-ui;\n\tfont-size:1.5rem;\n\tcolor:white;}\n#cards{\n\tdisplay:flex;\n\tflex-direction:rows;\n}\n.card{\n\tborder-radius:1.1rem;\n\tbackground:#f0f0f0;\n\tcolor:#141414;\n\tpadding:1rem;\n\twidth:150px;\n}`]}
+    jsData={[`function add(){ \n\tdocument.getElementById("cards").innerHTML += '<div class="card"><h3>title</h3><p>Content</p></div>' \n}`]}
+client:load/>
+
+#### No Separate Tabs
+
+<Code lang="astro" title="Page.astro" code={`---\nimport WebEditor from "../components/webpage-editor.svelte"\n---\n<WebEditor 
+    htmlData={[\`<h1>Bonjour</h1>\n<input id='d' type='text'>\n<button onclick='alert("hello "+ document.getElementById("d").value)'>Greet</button>\n<style>\nhtml{\n\tbackground:#444444;\n\tcolor:goldenrod; \n\tfont-family:cursive;\n}\n</style>\`]}
+    separateTabs={false}
+client:load/>`}/>
+
+Which produces
+
+<WebEditorJS 
+    htmlData={["<h1>Bonjour</h1>\n<input id='d' type='text'>\n<button onclick='alert(`hello `+ document.getElementById(`d`).value)'>Greet</button>\n<style>\nhtml{\n\tbackground:#444444;\n\tcolor:goldenrod; \n\tfont-family:cursive;\n}\n</style>"]}
+    separateTabs={false}
+client:load/>
+
+
+## Component Code
+
+<Tabs>
+  <TabItem label="Typescript">
+    <Code lang="svelte" code={WebEditorTSRaw} title="webpage-code-editor.svelte"/>
+  </TabItem>
+  <TabItem label="Javscript">
+    <Code lang="svelte" code={WebEditorJSRaw} title="webpage-code-editor.svelte"/>
+  </TabItem>
+</Tabs>
