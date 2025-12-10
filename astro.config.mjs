@@ -120,6 +120,9 @@ export default defineConfig({
                         picture: "/img/profile-pic.webp"
                     },
                 },
+                metrics: {
+                    readingTime: true,
+                },
             }),
             // Enables swiping in the menu from the side on moble
             starlightSidebarSwipe(),
