@@ -1,0 +1,134 @@
+---
+title: "Annoying side of Astro"
+date: 2025-12-09
+lastUpdated: 2025-12-09
+tags:
+    - frameworks
+    - astro
+    - starlight
+    - svelte
+    - react
+    - nextJS
+cover:
+  alt: An image of the logo of the site
+  image: ../../../assets/blog/annoying-side-of-astro.png
+---
+
+import SimpleEditor from "@/components/astro-svelte/editors/simpleCodeEditor.ts.svelte"
+
+I love [Astro](https://astro.build/). [Astro](https://astro.build/) has become my go to framework for a huge portion of my projects, including this site. That being said, there are some rough edges that I think are worth talking about before you choose it for your next project.
+
+{/* excerpt */}
+
+## What is Astro?
+
+[Astro](https://astro.build/) is a "meta-framework", which is basically a fancy way to say that it's a tool that allows you to build websites and webapps. It allows you to specify pages, components, and collections (non-webpage content like markdown files) that you use to build up your site. There are a bunch of advantages to Astro including: 
+
+1. Content-focus; Astro is designed for content heavy sites like blogs, documentation and e-commerce. Which is why it's used on this site
+2. It integrates with web tooling; Astro is designed from the ground up to be web-first, so it integrates with npm packages and other existing web tooling nicely
+3. Static powerhouse; Server-Side rendering frameworks are a dime a dozen. Tons of systems let you render your webpages on the server. Astro is one of the only tools of it's kind that focuses hard on static content, meaning it's designed to allow you to export HTML/CSS/JS, not **requiring itself to run** to serve content like [nextJS](https://nextjs.org/), [redwood](https://rwsdk.com/) etc.
+4. Framework Agnostic; Astro doesn't hitch itself to one framework, opting for it's [islands architecture](https://docs.astro.build/en/concepts/islands/) that allows you to use [svelte](https://svelte.dev/), [react](https://react.dev/), [vue](https://vuejs.org/), etc. all in one project
+
+All of this adds up to a system that is first class for generating most websites I deal with...
+
+## The Hiccups
+
+Unfortunately Astro runs into a ton of problems, A good chunk of these are to do with the server-first nature of Astro. Lots of Javascript libraries assume they are running in the browser, since for especially older libraries, that's the only place they **could** run. In the same vein lots of issues are inherent to the broader javascript ecosystem, and the language itself, but that's the language they hitched their boat to and it's worth knowing about. 
+
+### The Usual Suspects
+
+Since Astro is a javascript framework it does a lot of things in the "javascript" way. This means a lot of [lambda functions](https://www.geeksforgeeks.org/javascript/lambda-expressions-in-javascript/), nested processing (like [terneary chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_operator#conditional_chains)), and Javscript type quirks. Like if you want to check if something is a string, you might want to use `instanceof` or `typeof`, both of which provide different, and often incorrect and conflicting information based on what you want. [This is the best walkthrough I've seen](https://stackoverflow.com/questions/899574/what-is-the-difference-between-typeof-and-instanceof-and-when-should-one-be-used), and even this misses some weirdness like:
+
+```js
+console.log("hello" instanceof String);             // false
+console.log(new String("world") instanceof String); // true
+console.log(typeof "hello"  == "string");           // true
+console.log(typeof new String("world") =="string"); // false
+```
+
+So, instead you might add typescript into the mix. But typescript is similar to python type hinting, it's just a hint, it doesn't guarentee anything. I ended up in a roundabout way with code similar to this the other day when following ChatGPT guidance (my own fault really):
+
+```ts
+const myvar = 12 as unknown as string
+
+function greeting(name:string){
+    if (typeof name == "string"){
+        console.log("Hello ", name)
+    } else{
+        throw new Error
+    }
+}
+
+greeting(myvar)
+```
+
+My version was much more complicated, but it basically boiled down to someone in a library I was using had typed something using `as unknown as othertype` which then broke everything, since typecript saw it as a valid `othertype` when it was actually some other type under the hood, and it wasn't until I added my own check that I realized it wasn't. Not to mention for libraries that don't export their types you have to write your own wrapper. If you want safety you need a runtime library (and the slowdowns associated) like [zod](https://zod.dev/). Not to mention the frequent [type masturbation](https://andy-cinquin.com/blog/why-typescript-is-overrated) (or just [difficult types](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/vhtml/index.d.ts#L75-L83)). This can often make working with libraries a pain because there's some weird underlying type that has a 2 page long defninition you need to read up on, and then find the perfect dance of processing to get data out of. 
+
+There's also a large number of conventions to get used to, expecially since Astro uses [jsx](https://docs.astro.build/en/reference/astro-syntax). For example, how would you conditionally render something? For example maybe a boolean value called `showData`, how would you show a section if it was true? Well you need to do it in an expression, so this is the best way I've found:
+
+```astro
+---
+const showData = true
+---
+<div>other conent</div>
+
+{showData && <div>This only shows when showData is true</div>}
+```
+
+To me this reads like `showData` would show up in the markup, but it doesn't. Showdata is evaluated first, and if it exists, the right hand side of the expression is rendered. 
+
+Likewise how would you return multiple items that have no parent? For example how would you return a set number of `<li>`'s with no parent? For example 3 of them. As best as I can tell you can't actually loop an arbitrary number of times in Astro. Instead you need data to map over, so first we need to create some data to map over for the number of times we want to iterate. Once we have something to map over we can wrap it with a [no-tag/fragment](https://react.dev/reference/react/Fragment):
+
+```astro
+---
+const numberOfItems = 3
+
+const items = []
+
+for (let index = 0; index < numberOfItems; index++) {            
+    items.push("content")
+}
+---
+  <ul>
+    {  
+      <>
+      {items.map(
+        (item)=>(<li>{item}</li>)
+      )}
+      </>
+    }
+</ul>
+```
+
+You don't actually need fragments in this case, but when you do see these out in the wild the first time it's hard to tell what they even are. They're basically a no-op that exists to wrap other components that you don't actually want a parent for. When the information is returned and rendered they're removed, and you're left with just the `<li>`'s. It's also a quirk to know that you have to wrap the next `items.map()` call in `{}` since the fragment deactivates "js-mode" and goes back into "html mode", so you have to wrap in `{}` to go back to "js-mode". This is not stuff you know if you know javascript, it's stuff you know if you already know other jsx frameworks like react. Speaking of...
+
+### The Meta-ness
+
+As I said earlier astro is considered a "meta-framework" or a framework for web frameworks. This basically just means that it's the thing that can wrap up and package other frameworks together, as well as itself. It's the vehicle for other frameworks to run inside. But, this vehicle is missing a wheel or two. This becomes apparent when you want to do something that **feels** trivial. For example, the [simple code editor](https://kieranwood.ca/components/stacks/astro-svelte/editors/simple-code-editor/) component on this site is a component that allows you to create an interactive code editor for content. This component actually brings up 3 separate issues, all of which are related to complexity.
+
+#### DOMless
+
+The first issue was when I was writing the component. Astro, and any component library that does server-side rendering, cannot import libraries that use the [DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model). I initially wanted to use [monaco editor](https://microsoft.github.io/monaco-editor/) for the component, but ended up going with [codemirror](https://codemirror.net/). Trying to use monaco was an absolute hassle. Essentially for monaco to work it needs to use a [`Loader`](https://www.npmjs.com/package/@monaco-editor/loader), which then fetches the actual necessary scripts to use the editor. While this design is in general a pain in the ass, it was the **only way** I could get monaco to work, and is a commonly recommended way to do things. This is because monaco requires the `window` and `document` objects to be present, which they are not when rendering on the server. Then there were a bunch of hydration errors that would break the alignment of the editor because everything in monaco is `async`, and it would try to render before the page finished rendering. So, I gave up on monaco and went with the much simpler [codemirror](https://codemirror.net/). 
+
+This missing DOM issue also came up a lot when working with graphs such as the [observable plot components](https://kieranwood.ca/components/stacks/astro-svelte/observable-plot/). Since svg's can just be text I expected a lot of libraries to just use the SVG api's to generate an SVG string, but the majority actually use either an [SVGElement](https://developer.mozilla.org/en-US/docs/Web/API/SVGElement), [HTMLCanvasElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement) or [HTMLElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement) under the hood, all of which are not available in Astro. So, you either have to look for server-side compatible libraries (like [apache E-charts](https://echarts.apache.org/en/index.html), with it's [modes](https://apache.github.io/echarts-handbook/en/how-to/cross-platform/server/)), or try to do incredibly hacky workarounds on a per-dependency basis (which in the case of monaco didn't even fully solve the problem). There are other more exotic options like faking parts of the dom, using [`define:vars`](https://docs.astro.build/en/reference/directives-reference/#definevars) (here be dragons) or [streamed canvases](https://github.com/Automattic/node-canvas), but I didn't look into those too much yet.
+
+#### Stacking Complexity
+
+The second issue made itself apparent about 2 seconds ago. You see I wanted to embed the component in this page so people could see what I was talking about. Unfortunately I just found out that [the blog plugin](https://starlight-blog-docs.vercel.app/) I'm using for [starlight](https://starlight.astro.build/) (an Astro documentation system), doesn't play nicely with the [Astro Svelte](https://docs.astro.build/en/guides/integrations-guide/svelte/) integration. Meaning the metaframework overhaul (starlight), which is running essentially a middlewear (the blog plugin), does not work with the native plugins (the svelte integration). Diagnosing this issue is a pain already, but fully understanding and resolving the issue would probably take understanding a ton of code between how Astro works, how starlight changes that, how the blog plugin changes starlight, and how the svelte plugin works. Not to mention my styling sometimes fighting with my existing [tailwindCSS](https://tailwindcss.com/) styles. Sometimes simpler, dumber architecture can save you a huge amount of hassle. In this case, I do not care enough to diagnose the issue, so if you want to see the component [click this link](https://kieranwood.ca/components/stacks/astro-svelte/editors/simple-code-editor/).
+
+#### Data Passing
+
+The third issue is one inherent to understanding what Astro does. One common thing you might want to do with the component I mentioned earlier is specify [custom languages and themes](https://kieranwood.ca/components/stacks/astro-svelte/editors/simple-code-editor/#custom-languages--themes), which you can do, just not with Astro itself. The reason for this is that when you import javascript in Astro, then pass it to a component in another framework (like svelte), it is serialized and deserialized. I haven't looked into the exact mechanism for this, but I assume it's something similar to `JSON.stringify()` to serialize and `JSON.parse()` to deserialize. The important thing is that anything semi-dynamic cannot be passed as a prop to a UI framework. For the simple editor this comes up because themes and languages are javascript functions, which do not transfer properly. They return objects, so I tried just passing those, but those objects, also have keys that are functions, so no dice. 
+
+### The Idiot in the Room
+
+There are also a lot of footguns that exist in Astro if you are forgetful like I am. One of the main one's being the [Client Directives](https://docs.astro.build/en/reference/directives-reference/#client-directives), and [client router](https://docs.astro.build/en/reference/modules/astro-transitions/). Client directives are what allow you to specify if your component should be run on the client, or if it can be server rendered. Astro components **cannot** be client rendered, but framework components (like svelte, react etc.) can. This means for a framework component you need to tell it when it should load on the client, and there's a bunch of clever options. Unfortunately, if you're forgetful, you will constantly forget to set one, and then wonder why your component didn't work, with no error logs. Since it's javascript, and javascript fails silently all the time, is it just an issue you didn't catch, or did you forget to add `client:load` to your component? Happens to the best of us. 
+
+The [client router](https://docs.astro.build/en/reference/modules/astro-transitions/#clientrouter-) is another clever peice of tech that lets you treat your site as if it was a single-page application. Unfortunately it brings it's own headaches to use, namely with maintaining state, and handling `onload`. In order for a component to maintain it's state you must pass [`transition:persist` and `transition:persist-props`](https://docs.astro.build/en/guides/view-transitions/#transitionpersist-props) to it. I have forgotten this so many times, and since it's easy to forget that the transitions are **essentially equivalent to full page navigations**. Unfortunately the story gets a bit more complicated here. Because client router takes over your page navigation, event's like `onload` are often broken, so you need to use custom [lifecycle events](https://docs.astro.build/en/guides/view-transitions/#lifecycle-events) to do things you want to on load, while also remembering to make your [javascript `is:inline`](https://docs.astro.build/en/reference/directives-reference/#isinline).
+
+## Conclusion
+
+Astro is a great framework, and of the available options I would say it's the most versitile and useful I've worked with. That being said, it's important to look at the bad parts and decide if these are dealbreakers for you. Likewise, I use Astro just for static content, which is most of what I do these days, including my application frontends. If you're using any of the [adapters](https://docs.astro.build/en/reference/adapter-reference/) like [nodeJS](https://docs.astro.build/en/guides/integrations-guide/node/) to run it dynamically, or [serverless](https://en.wikipedia.org/wiki/Serverless_computing) (through [vercel](https://docs.astro.build/en/guides/integrations-guide/vercel/) or [cloudflare](https://docs.astro.build/en/guides/integrations-guide/cloudflare/)), I have no opinions about Astro over any other options. For a site like this one, even with it's flaws, I still think Astro was the right choice.
+
+
+
