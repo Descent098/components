@@ -1,6 +1,7 @@
 <script>
     import { onMount } from "svelte";
     import QRCode from "qrcode";
+    import { parse, formatHex } from 'culori';
 
     let {
         link,
@@ -33,9 +34,10 @@
     }
 
     function getCSSVarValue(name) {
-        return getComputedStyle(document.documentElement)
+        let color = getComputedStyle(document.documentElement)
             .getPropertyValue(name)
             .trim();
+        return `${formatHex(parse(color))}`
     }
 
     onMount(() => {

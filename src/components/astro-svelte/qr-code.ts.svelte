@@ -4,6 +4,7 @@
         type QRCodeMaskPattern,
         type QRCodeErrorCorrectionLevel,
     } from "qrcode";
+    import { parse, formatHex } from 'culori';
 
     let {
         link,
@@ -35,9 +36,10 @@
     }
 
     function getCSSVarValue(name: string) {
-        return getComputedStyle(document.documentElement)
+        let color = getComputedStyle(document.documentElement)
             .getPropertyValue(name)
             .trim();
+        return `${formatHex(parse(color))}`
     }
 
     onMount(() => {
