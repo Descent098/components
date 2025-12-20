@@ -1,0 +1,227 @@
+---
+title: "The RSC Problem"
+date: 2025-12-19
+lastUpdated: 2025-12-19
+tags:
+    - frameworks
+    - security
+    - react
+    - nextJS
+cover:
+  alt: An image of the react logo and an icon of a server with a caution sign
+  image: ../../../assets/blog/the-rsc-problem/hero.png
+---
+
+import {Image} from "astro:assets"
+import vulnerabilityGraph from "@/assets/blog/the-rsc-problem/vulnerabilities-chart.png"
+
+It's been a bad month to rely on react. In the last month there have been 2 major vulnerabilities, a [remote code execution one](https://react.dev/blog/2025/12/03/critical-security-vulnerability-in-react-server-components) and a [denial of service one](https://react.dev/blog/2025/12/11/denial-of-service-and-source-code-exposure-in-react-server-components). Along with whenever major vulnerabilities happen, there's been a lot of discussions about whether to abandon the technology fully and move to a "real stack" by glib developers in other stacks. It's easy to be high and mighty when it's not your day in the shade, but is it really worth running in the other direction?
+
+{/* excerpt */}
+
+## What is RSC?
+
+Before getting started it's worth knowing what RSC (react server components) are. Dan Abrimov's [react for two computers](https://overreacted.io/react-for-two-computers/) talk is probably one of the best introductions, and Josh Comeau's [Making sense of react server components](https://www.joshwcomeau.com/react/server-components/) is also pretty good. The very simple idea is that there's often code you want to run **only** on a server, and then embed it into a component. Good examples of this being useful is in data fetching, where if you can for example fetch data from your database before you render the component on behalf of the client you can avoid needing to have the client wait for the fetch. This can undeniably provide a better user experience, and even potentially security in **some** contexts. However, the RSC standard does not just "insert" data, [it's a lot more complicated than that](https://overreacted.io/introducing-rsc-explorer/). 
+
+### Flight Protocol
+
+*If you prefer video [this video](https://www.youtube.com/watch?v=iV48tEiHFDY) does a great job of explaining the vulnerability*
+
+The flight protocol is the name given to the part of this data exchange that handles [serialization and deserialization](https://en.wikipedia.org/wiki/Serialization). There are a lot of reasons you need this, one common issue  is that not all data can be ready at the same time as the rest of the page is ready, so you often need to **stream data in**. The protocol itself is [fully custom](https://gist.github.com/HerringtonDarkholme/87f14efca45f7d38740be9f53849a89f#flight-reference-types), but the principles are explained prety well [in this post](https://overreacted.io/progressive-json/) made by Dan Abrimov, where he creates a progressively loading JSON format. Essentially you can define most things in javascript using the protocol, and the client and server communicate back and forth with it when necessary. Here be dragons...
+
+## The Vulnerability
+
+<details>
+<summary>TL;DR</summary>
+
+To exploit you need to:
+
+1. Define a function by using the flight protocol and `__proto__` until you get the `Function` class
+2. Define a `then()` from a normally safe function call, which calls the function you defined in step 1
+
+*Keep in mind also that access to `__proto__` means this is just 1 way to exploit the vulnerability. If you know a class that exists on the backend, you could just directly overwrite a method you know is going to run.*
+
+[Skip to next section](#give-the-devil-its-due)
+
+</details>
+
+Now we have the background I want to clear things up. The vulnerability is in the flight protocol, not the server-side rendering portion of react. There's been a lot of confusion online about this that has lead to some misinformation. With that out of the way let's get into some javascript you need to know. To simplify, javascript is an object oriented language that uses [prototypical inheritence](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Inheritance_and_the_prototype_chain). What this mouthful of a concept means is that you can access and override parts of classes that exist. On top of this any classes defined can have the prototype of other classes, and you can access them, and override them as well.  In the example below we can use the `Poodle` class to override the `bork()` method on the `Dog` class that it inherits from:
+
+```js
+class Dog{
+    constructor(){}
+
+    bork(){
+      console.log("bork")
+    }
+}
+
+class Poodle extends Dog{
+    constructor(){
+      super()
+    }
+
+    bork(){
+      console.log("le bork bork")
+    }
+}
+
+const myPoodle = new Poodle()
+
+myPoodle.bork() // Logs: le bork bork
+
+myPoodle.__proto__.__proto__ // The Dog class
+
+myPoodle.__proto__.__proto__.bork() // Logs: bork
+
+// We can now override Dog.bork
+myPoodle.__proto__.__proto__.bork = ()=>{console.log("Le bad bork")}
+
+const doggie = new Dog() // Now Dog's have the new bork function
+
+q.bork() // Logs: Le bad bork
+```
+
+
+In practice classes inherit the prototype from the [`Function`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function) class, which allows you to define and run new functions:
+
+```js
+class Dog{
+    constructor(){}
+}
+
+const FunctionObject = Dog.__proto__.constructor // Get's the Function class
+
+let badFunction = new FunctionObject("console.log('hello world')")
+
+badFunction() // Runs: console.log('hello world')
+```
+
+Luckily in the browser, this doesn't matter too much because of a [CSP (Content Security Policy)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP) called [trusted types](https://developer.chrome.com/docs/lighthouse/best-practices/trusted-types-xss#:~:text=Trusted%20Types%20are%20a%20web%20platform%20security,by%20blocking%20risky%20injection%20points%20), which will actually throw an error if you try this, but react server components don't run in the browser and allow you to do this. This means you can write whatever function you want and run it **on the server** from **the client**. Running also requires a bit more complexity, since in our above example we just call the function, we need to do something more clever. 
+
+To run [async code](https://kieranwood.ca/compsci/Programming/concepts/Concurrency--and--Parallelism#asyncawait) in javacsript there are a few options, one of which is to use the [`then()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then) funciton. If you want to get some data in javascript you can [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch) by doing something like this:
+
+```js
+const url = "" // Some URL
+
+const response = await fetch(url)
+const data = await response.json() // Get the data as a JSON object
+```
+
+But you can instead do it as a chain of function calls, like this:
+
+
+```js
+const url = "" // Some URL
+
+fetch(url).then((resp) =>{
+  return response.json()
+}).then((data) =>{
+  console.log(data)
+})
+```
+
+To make it easier to read, we can pass the functions [without having them be anonymous](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions):
+
+
+```js
+const url = "" // Some URL
+
+function getResponseAsJSON(response){
+  return response.json()
+}
+
+function logJSONData(data){
+  console.log(data)
+}
+
+fetch(url).then(getResponseAsJSON).then(logJSONData)
+```
+
+So, `then()` takes in a function and runs it. What if we did something like this:
+
+```js
+class Dog{
+    constructor(){}
+}
+
+const FunctionObject = Dog.__proto__.constructor // Get's the Function class
+
+let badFunction = new FunctionObject("console.log('hello world')")
+
+const URL = "" // some url
+
+fetch(URL).then(badFunction)
+```
+
+Now we got our function to run when `then()` happened. This is essentially what you can do in react. Additionally because you're injecting javascript onto the server, you also get access to other server functions, so with things like NodeJS's [child_process()](https://nodejs.org/api/child_process.html) you can actually span non-javascript executables on the server, hence the name of the vulnerability is React2Shell. 
+
+So, to recap the steps are:
+
+1. Define a function by using `__proto__` until you get the `Function` class
+2. Define a `then()` from a normally safe function call, which calls the function you defined
+
+*Keep in mind also that access to `__proto__` means this is just 1 way to exploit the vulnerability. If you know a class that exists on the backend, you could just directly overwrite a method you know is going to run.*
+
+## The Devils Due
+
+It's no secret that I [don't like react](https://kieranwood.ca/tech/blog/good-frameworks/#the-shoulders-we-stand-on), and haven't [for a while](https://kieranwood.ca/tech/blog/dont-learn-frameworks/) but, the principle of RSC **could** be a good idea, but not how it's been implemented. Being able to pre-fetch database results for a user, while they're logging in, and having it hot-cache ready by the time they finish an auth flow is a really cool option to have. Likewise being able to do data fetching while providing functionally static HTML to a client enables a ton of good CDN caching strategies. Server side rendering has been a pattern for a long time because of how well it works.
+
+That said, I think there's a few things that make this vulnerability particularly egregious. Before I get to those, I do think it's worth looking around at some of the responses, and at security broadly. To start, how bad really are these vulnerabilities?
+
+### The Details in the Devil
+
+Of the two exploits [CVE-2025-55182](https://www.cve.org/CVERecord?id=CVE-2025-55182) is the most concerning. It's a 10 which means it's literally the highest rating you could possibly get. That being said, how exploitable is this? Very, very exploitable. Anyone who isn't even using react server components is actually vulnerable to this on [NextJS](https://nextjs.org/blog/CVE-2025-66478). Considering NextJS is incresibly popular, that's not great. I decided to look around[^1] [^2] [^3] and see what other high level vulnerabilites existed from this year and last. 
+
+A few interesting things I noticed:
+
+1. There are way more vulnerabilities disclosed this year and last year compared to prior years[^2] [^4]; AI has been quite helpful (and [harmful](https://daniel.haxx.se/blog/2024/01/02/the-i-in-llm-stands-for-intelligence/)) in this regard, but in general I think there are also just more security-minded eyes peering at code these days <Image src={vulnerabilityGraph} alt="A graph of vulnerabilities over time"/>
+2. A lot of major issues exist around endpoints that evaluate user requests to execute tasks; For example [this issue](https://www.cvedetails.com/cve/CVE-2025-14964/) is in a [CGI Bin](https://www.reddit.com/r/explainlikeimfive/comments/473za7/eli5_cgibin/) script, or many [php scripts](https://www.cvedetails.com/cve/CVE-2023-53923/), or one of the most famous vulnerabilities [Log4Shell](https://www.ibm.com/think/topics/log4shell)
+3. A lot of the more modern web frameworks have less major vulnerabilites than you think; [Django](https://www.djangoproject.com/) only seemed to have 1 I could see last year, same with [Laravel](https://laravel.com/). These two for React are a statistical anomoly
+
+With that being said, React has a massive user base, with lots of eyes on it. This means if there is a vulnerability it's much more likely to be found.  
+
+Likewise, what React is trying to do is quite complicated...
+
+### Complexity
+
+While it may look deceptively simple to some, this whole architecture is **complicated**. Complicated enough that [Cloudflare took themselves down trying to mitigate this](https://blog.cloudflare.com/5-december-2025-outage/). Even the [proof of concept](https://github.com/msanft/CVE-2025-55182)s that I've seen are not trivial. This is where part of the issues lie. React is complex. Partially because it's used to tame some genuinely complicated problems, but also because **the philosophy of React lends itself to complexity**. [I wrote about this previously](https://kieranwood.ca/tech/blog/good-frameworks/#a-quick-break-down), but essentially React tries to rebuild it's own version of a lot of the internal plumbing in the browser. There will be issues when you do this, [major companies run into them](https://blog.cloudflare.com/deep-dive-into-cloudflares-sept-12-dashboard-and-api-outage/), features like [useEffect](https://react.dev/reference/react/useEffect) constantly have [blog posts](https://overreacted.io/a-complete-guide-to-useeffect/) about how to use them properly. Not to mention the ever growing list of ["use" directives](https://react.dev/reference/rsc/directives) which are becomming common in systems like [nextJS](https://nextjs.org/docs/app/api-reference/directives).
+
+Before this whole fiasco if you asked 10 React devs about details of how react server components work, you would get 12 wrong answers, and that's a problem. If React is going to step into the backend world more seriously then it can't just keep relying on trying to ["black-box"](https://www.codecademy.com/article/black-box-programming) everything. If it's too complicated for a developer to use directly, then it's often a bad idea. Cleverness is the fastest way to get killed in a project. If I compare the most popular framework in React (NextJS) to other frameworks, we start to see the problem.
+
+When I deploy a typical [Flask](https://flask.palletsprojects.com/en/stable/) app, I know that I can block every route and header except the one's **I write**. There's no secret routes hiding in the background being exposed. I can block everything, and whitelist what I need. In other words **Flask does not rely on any magic**. The only part that's "magical" that I don't like, is when [debug mode](https://flask.palletsprojects.com/en/stable/quickstart/#debug-mode) is on, and I have to turn it on. [Django](https://www.djangoproject.com/) is largely the same, barring [csrf](https://owasp.org/www-community/attacks/csrf) headers on forms, and the [admin interface](https://docs.djangoproject.com/en/6.0/ref/contrib/admin/) (which doesn't need to be publicly accesible). With React it's the opposite. The declarative nature combined with the virtual DOM makes it essentially impossible to gather what a reasonable and unreasonable request looks like. If I'm running a firewall, I'm blocking blind. What headers are essential? For next JS the `next-action` header is one you need in a lot of cases, block it and everything falls apart. What about routes? Well I need to allow `/_next/data/`, oh and `/_next/image`, and `/_next/static/`, so maybe I should just whitelist `/_next`? But is that safe to do? Who knows? If you want to find out you need to scrub nextJS internals to find out. Alternatively with Django if I have static assets I can either serve `/static` and `/media` or use a separate static provider like S3 and block those routes as well. Even though Django does so much, and is so big and complicated, **you can cut your complexity down, and understand what it's doing**. At the end of the day it's a glorified HTTP server. Requests come in, are processed and HTML is returned. React is a runtime, and now it's a server-client linked runtime, doing god-knows what, and functionally 0 visibility into it's internals at any given point.
+
+Small amounts of this complexity, or where necessary could be fine. Browsers for example need complicated DOM parsing and manipulation code to function. For a framework running on a system that already has all that, and duplicating all that effort (and the bugs to go along with it), then opting to extend into even more complicated options like stacking [compilers](https://react.dev/learn/react-compiler) and a [server runtime](https://react.dev/reference/rsc/use-server) with a custom serialization pipeline on top. The second vulnerability is related to exactly this. The [denial of service vulnerability](https://react.dev/blog/2025/12/11/denial-of-service-and-source-code-exposure-in-react-server-components) came out of the ability to recursively define declarations allowing you to create an infinite loop that will crash the server. This vulnerability is actually quite easy to understand, and is something that in most frameworks wouldn't make it past basic security testing. This is not to say that I think it's the dev's fault they didn't catch it, because while it's simple and common, it's easy to miss in the complexity of writing a new protocol across a new paradigm, which is the problem. There's so much stuff you (and anyone running your software) it taking on with a change like this.
+
+I think the reason these vulnerabilities took so long to find is because there's just so much stuff that was pushed out so quickly that we're going to keep finding problems as people are now able to take more time to pick things apart. It was [announced in 2020](https://legacy.reactjs.org/blog/2020/12/21/data-fetching-with-react-server-components.html) and launched in 2024 with [react 19](https://react.dev/blog/2024/12/05/react-19#react-server-components) after [350+ PR's](https://github.com/facebook/react/pulls?q=is%3Apr+is%3Aclosed+%5BFlight%5D+in%3Atitle+created%3A%3C2024-12-01+). The initial experimental flight implementation touched over [75 files](https://github.com/facebook/react/pull/16398)! It's clear that continuing to stack more and more complicated and innevitably vulnerable code into ever-growing complicated framework features is the plan for the future. Not only that, but forcing people who don't even use them to live with the consequences...
+
+### Unconsentual Defaults
+
+You may have noticed I've called out NextJS a few times, if you're unfamiliar NextJS is **the framework** for react. [Vercel](https://vercel.com/) who develops NextJS primarily has a heavy hand in the decision making process for react, and has built most of their business on top of it. The two are inextricably linked whether people like to admit it or not. The App Router in NextJS was [essentially the test of this approach](https://medium.com/bofoss/reacts-evolving-vision-dispelling-misconceptions-and-navigating-the-framework-frontier-49cc907c4c31). This closeness is why many react projects (and react's own documentation) use NextJS. It's also why this bug is so widespread, because NextJS is vulnerable to it **whether you use the features or not**. Likewise, whether you like it or not React will have this paradigm. Any bugs that come from added complexity due to these features, and the fact it's how NextJS does things now are yours to deal with the consequences of. This 2-way data binding option should be opt-in, the fact it's on by default is awful. The patch for this was to sanitize to only properties defined on the classes themselves, and to add an exception for the infinite loop. **If you do not need these features they shouldn't be enabled**!
+
+To give NextJS it's due, depending on your setup, if you use the [static site generation](https://overreacted.io/static-as-a-server/) options with NextJS then you're fine (as far as I know), but that is the overwhelming minority of people. Not to mention if you are statically generating your site, something like [Astro](https://astro.build/) or [sveltekit](https://svelte.dev/docs/kit/introduction), or avoiding javascript all together something like [hugo](https://gohugo.io/) is much better suited to most use cases. Even with server-side rendering if you really need it, why not just use any of the frameworks **designed** for this (like [fastAPI](https://fastapi.tiangolo.com/), [expressJS](https://expressjs.com/), or even the [golang built in http package](https://gobyexample.com/http-server)), as opposed to having it bolted on after. You could even use React on the frontend of all of these options on the client. None of these options work by fundamentally allowing you to inject code into the server...
+
+### Eval
+
+Dynamic code generation and execution on a server is a bad idea. The overwhelming majority of bugs in routers come from some [CGI Bin](https://en.wikipedia.org/wiki/Common_Gateway_Interface) script somewhere. Likewise, platforms like [repl.it](https://replit.com/) spent a ton of time creating sandboxes and limited environments to avoid the problems inherent with running code from an external source. Fundamentally react server components (and more specifically the flight protocol) are just remote code execution. You build up code as a string to execute elsewhere. This has never been a good idea, it should not have been the way they chose to implement this. No user-defined or even server-defined functions should have been invokable. One of the big advantages of SSR is that you don't have to worry about random clients connecting to your DB, or some proxy to your DB. All of those use cases are permenantly off the table for as long as the flight protocol exists as far as I'm concerned. If I'm a database admin, or devops person after this CVE I would be looking to lockout all of my react apps from directly interfacing with my database, and instead having to communicate through a proxy with sanity checks. This is the part that annoys me the most about all of this.
+
+One of the big things that happened in the community when the RSC changes were happening was people saying that it would be fine because it's the react team. Most teams can't handle the complexity of building a system like this, but the react team is different. Clearly not. Being clever doesn't excuse poor architectural decisions. 90-95% of use cases could be handled without flight at all, but instead this system was injected to heavily focus on the smallest use cases, and performance "wins" at the expense of everything else. How many more decisions are going to be made like this? How many more bad practices should we be applauding going forward? How many times can we be told "they'll do it right" before recognizing that actually this is a terrible choice regarless of who's making it?
+
+## Distractions
+
+On top of everything there have been a few tendencies of people in the community that have been annoying me. None of the arguments have addressed the concerns, and many of them just plainly ignore the problem. The two biggest offenders are [this video](https://www.youtube.com/watch?v=6kZPt-AELVk) and [this one](https://www.youtube.com/watch?v=kmlMNtjFgoY). Both of these videos focus heavily on "this isn't an issue of mixing server and client", which is true, and false. No, people did not "accidentally include" code that caused this problem, you're right, my framework did it for me. The problem is that React habitually inserts itself and asserts it knows what to do when it clearly does not. These two sanitization problems were incredibly simple sanitization. Embarrassingly simple quite frankly. But if I were to even tell a well experienced dev there's a simple vulnerability like this in React **they probably would never find it**. This may sound like a good thing, but it's not. The machinery to make a lot of this work is so overly complex at this point that it's just hard to understand, and in practical use, nearly impossible to parse. This makes React **less secure** in my eyes, not more.
+
+The problem is that React **hates it's platforms**. When it runs in the browser it asserts that it can do dom manipulation better than the DOM can. When it runs on the server it asserts it can do these complicated 2-way data bindings in a custom format better than the simplicity of making requests and responses. Instead there must be a **react powered** abstraction that stiffarms itself in. There are tons of RPC-like formats that exist out there, but instead they needed to make their own to bind components directly instead of just hydrating them. This obsession with hating existing standards, and asserting you know better is what will kill React long term. If everything relating to the react server components ecosystem dissapeared tomorrow, primarily just NextJS users would be effected. If you instead removed the more "standard" approaches like RPC, the internet would collapse. React has no interest in being a standard, or using any standards. Everything that already exists is an obstacle to overcome, and nothing is a better example of this than the flight protocol. 
+
+That's the real issue. It's not that server-client relationships aren't possible to make work, or don't have advantages, it's that a server and a client that both hate their platforms and fight against them will not work. It's not something you can overcome, and requires a fundamental philosophy shift on the react team. Java ran into a neverending set of problems with [remote method invocation](https://en.wikipedia.org/wiki/Java_remote_method_invocation) as well, you probably honestly still shouldn't use it. React got popular off the back of this attitude because at a time it was better. When JQuery ruled, react really did do a lot of things better than the browser, today, not so much. Likewise, you could get away with a lot more in React in the past because it didn't effect things that mattered as much like the data layer, now that React wants to take over those things it needs to learn to play nice, with existing battle-tested solutions or these problems will keep happening. 
+
+**You can't rewrite the world in a frontend framework.**
+
+## Conclusion
+
+Server-side rendering is great, it's the way we've been doing things for a long time before react even existed. But react server components, and what it's become with it's complicated 2-way data bindings, custom protocols and enless complexity is a danger. I suspect these set of vulnerabilities will not be the last we hear about issues with RSC and NextJS. Hopefully there are lessons learned from this, but at this point most of the issues I addressed **can't** be fixed. The problem **is the architecture** and the choices made. So, to finish, in this case for once I think it is worth switching stacks, or at a minimum choosing a framework that allows you to disable these features entirely. I don't think RSC should be the future, but I guess we'll see if it's too big to fail.
+
+[^1]: https://www.cvedetails.com/vulnerability-list/year-2025/vulnerabilities.html?page=1&cvssscoremin=9&cvssscoremax=10&order=7
+[^2]: https://jerrygamblin.com/2025/01/05/2024-cve-data-review/
+[^3]: https://www.cve.org/Downloads
+[^4]: https://www.cvedetails.com/
