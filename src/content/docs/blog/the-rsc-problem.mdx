@@ -1,7 +1,7 @@
 ---
 title: "The RSC Problem"
 date: 2025-12-19
-lastUpdated: 2025-12-19
+lastUpdated: 2026-01-14
 tags:
     - frameworks
     - security
@@ -175,7 +175,7 @@ Of the two exploits [CVE-2025-55182](https://www.cve.org/CVERecord?id=CVE-2025-5
 
 A few interesting things I noticed:
 
-1. There are way more vulnerabilities disclosed this year and last year compared to prior years[^2] [^4]; AI has been quite helpful (and [harmful](https://daniel.haxx.se/blog/2024/01/02/the-i-in-llm-stands-for-intelligence/)) in this regard, but in general I think there are also just more security-minded eyes peering at code these days <Image src={vulnerabilityGraph} alt="A graph of vulnerabilities over time"/>
+1. There are way more vulnerabilities disclosed across all platforms and frameworks this year and last year compared to prior years[^2] [^4]; AI has been quite helpful (and [harmful](https://daniel.haxx.se/blog/2024/01/02/the-i-in-llm-stands-for-intelligence/)) in this regard, but in general I think there are also just more security-minded eyes peering at code these days <Image src={vulnerabilityGraph} alt="A graph of vulnerabilities over time"/>
 2. A lot of major issues exist around endpoints that evaluate user requests to execute tasks; For example [this issue](https://www.cvedetails.com/cve/CVE-2025-14964/) is in a [CGI Bin](https://www.reddit.com/r/explainlikeimfive/comments/473za7/eli5_cgibin/) script, or many [php scripts](https://www.cvedetails.com/cve/CVE-2023-53923/), or one of the most famous vulnerabilities [Log4Shell](https://www.ibm.com/think/topics/log4shell)
 3. A lot of the more modern web frameworks have less major vulnerabilites than you think; [Django](https://www.djangoproject.com/) only seemed to have 1 I could see last year, same with [Laravel](https://laravel.com/). These two for React are a statistical anomoly
 
