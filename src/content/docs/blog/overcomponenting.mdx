@@ -1,0 +1,129 @@
+---
+title: "Overcomponenting"
+date: 2026-01-19
+lastUpdated: 2026-01-19
+tags:
+    - frameworks
+    - components
+    - svelte
+cover:
+  alt: An image of a large filetree to produce a single element
+  image: ../../../assets/blog/overcomponenting.png
+---
+
+import {Image} from "astro:assets"
+import { Aside } from '@astrojs/starlight/components';
+
+> When you're a hammer, the whole world looks like nails.
+
+When working in component frameworks it's easy to see **everything** as a component. Many resources and component libraries do this. If you want to have a card, button, link, etc. anything "should" be a component. I think this approach is an anti-pattern, and causes more headaches than it's worth. Overcomponentizing everything makes every decision paralyzing, particularly in code that does not need the level of options, or polish many component libraries cling to. 
+
+{/* excerpt */}
+
+<Aside type="note">The code in this article is messy, and I did not clean it up before posting. I just dumped it in as it was when I recognized this issue.</Aside>
+
+I myself have fallen victim to this, very recently in fact. Recently enough to write this article...
+
+## Where I Was
+
+To explain this I will give an example. I am in the middle of learning sveltekit as a potential alternative to astro for web-apps. This means that for this project the philosophy of moving fast and breaking things is certainly in play, I'm here to learn. That being said, I do intend to use this project for a while. Additionally I'm a big believer that it's not just practice that makes perfect, but perfect practice that makes perfect, or more reasonably that disciplined, realistic practice leads to improvement. In that spirit I'm not doing things the "production" way, but also not so indifferent to the consequences of my choices that I form bad "muscle memory". 
+
+So, I'm building an app that tracks my workouts. The app is offline-first, and designed to just house the data locally on the users device. It's essentially a static web-app with a service worker and indexDB. As I was going through and setting everything up I wanted to use as few dependencies as possible so I'm actually learning the framework, and not just whatever library I'm using. So, I setup my base styles, and began messing around with some designs. The first thing I needed was a menu. I decided to go for a [fab (floating action button)](https://m2.material.io/components/buttons-floating-action-button) design. So, I eventually threw together the component, stuck it on the `+layout.svelte` page so it showed on every page, and went on. The next 2 components I needed were a card, and a button. So, I set them up, and had to deal with the associated headaches. Since content needs to be passed into them (since they're essentially a container) you have to do a bit of a dance to get content to render. Here's the code for the components:
+
+`card.svelte`
+```svelte
+<script>
+    let { children, bg="" } = $props();
+</script>
+<style>
+    .primary{
+        background-color:var(--primary-color);
+    }
+    .card{
+        min-height:25vh;
+        border-radius:var(--border-radius); 
+        box-shadow:var(--standard-box); 
+        padding:var(--medium-padding); 
+        margin:var(--small-padding);
+    }
+</style>
+<div class={`card ${bg}`}>
+    {@render children()}
+</div>
+```
+
+`button.svelte`
+```svelte
+<script lang="ts">
+    import type { Snippet } from 'svelte';
+
+    type Props = {
+        children:Snippet;
+        type?:"primary"|"ghost";
+    }
+
+    let {children, type: style="primary", ...rest}:Props = $props()
+</script>
+<style>
+    button{
+        border-radius:var(--border-radius); 
+        box-shadow:var(--standard-box); 
+        padding:var(--medium-padding); 
+        margin:var(--small-padding);
+        color:var(--text-color);
+    }
+    .primary{
+        background:var(--accent-color); 
+        border-color:color-mix(in lch, from var(--accent-color), white 10%); /*TODO figure out why broken*/
+    }
+    .ghost{
+        background-color: var(--bg-color);
+    }
+</style>
+
+<button {...rest} class={style} >
+    {#if children}
+        {@render children()}
+    {:else}
+        <p>No content providfed</p>
+    {/if}
+</button>
+```
+
+One thing you will notice is that both of these essentially compile down to a single element, with a bit of styling based on class. This sounds sort of like, an HTML element. In fact the only actual "feature" I got with all this is "type-safety" on my button css classes. If I move all of this code to the global stylesheet, I could actually just get rid of the components entirely. All I would need is:
+
+```css
+button{
+    border-radius:var(--border-radius); 
+    box-shadow:var(--standard-box); 
+    padding:var(--medium-padding); 
+    margin:var(--small-padding);
+    color:var(--text-color);
+}
+.card{
+    min-height:25vh;
+    border-radius:var(--border-radius); 
+    box-shadow:var(--standard-box); 
+    padding:var(--medium-padding); 
+    margin:var(--small-padding);
+}
+.primary{
+    background:var(--accent-color); 
+    border-color:color-mix(in lch, from var(--accent-color), white 10%); /*TODO figure out why broken*/
+}
+.ghost{
+    background-color: var(--bg-color);
+}
+```
+
+Then I just use regular HTML elements with class names. In this case this saves only ~20 lines of code, but the principle carries to many projects I've seen. I ended up getting lost in the sauce and rebuilding the most simple of elements for functionally no benefit, and I'm not the only one. Many component libraries will do obscure things that are overcomplicated for basically no reason. For example, some libraries will replace default HTML elements with a `<div>` or `<span>`, then waste 200 lines of code re-implementing features that were already available in the `<details>` element (for accordions), `<button>` element, or even `<a>` elements. This often leaves them with **less** features, especially in an accessibiltiy context, because they missed something small. I caught this while my button component was only 30 lines long, but for comparisson something like shadcn the button component is 62 lines[^1] as of writing **without the dependencies**.
+
+There are some counter points I can see people arguing that I will address below: 
+
+- **Re-usability**: If you're not using a component more than 20 times, or it's not longer than ~50 lines of JS (or some combination of complexity around there) re-usability doesn't matter. Manually updating 20 references if I need to update a class name, or an `onclick` should take me 10 mins tops. If it takes longer than that, you got bigger issues (probably your code is too complicated to move through easily).
+- **Accessibiltiy**: Some people argue that [radix](https://www.radix-ui.com/) or some other libraries for accessibility are strictly necessary for development, and this just isn't true. If you approach your HTML [semantically](https://developer.mozilla.org/en-US/docs/Glossary/Semantics) you find that you both don't need these workarounds, and often times you end up with better support since manufacturers of screen readers etc. prefer semantic HTML anyways. Particularly if you do some coplicated structure, then try to fix it later, many tools just give up and users end up darting around the page.
+- **Simplicity**: If you just want to install something and move on with your life, then fair enough, but understand what you're really doing. You will have security vulnerabilities, you will have incompatabilities with other tools, you will have the maintenance burden of maintaining the components moving forward, and you will have some controls locked out. For some project these are reasonable trade-offs, but in many cases, especially for something simple, just stop being lazy.
+
+**Not everything should be a component**, especially not in every context. The browser has lots of wonderful things built into it, and you should use them more. If you're building a simple app, just keep the code simple. The more discipline you develop doing this (especially early on), the less headaches you have down the road. Let a button be a `<button class="primary" onclick="myfunction()">Click me</button>`, not a `<Button type="primary" label="Click me" onclick={myfunction}/>`, you'll thank yourself later.
+
+[^1]: https://ui.shadcn.com/docs/components/button Head to manual installation to see the `.tsx` file
