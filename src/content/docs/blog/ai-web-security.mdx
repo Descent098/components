@@ -1,0 +1,76 @@
+---
+title: "Web Security Flood"
+date: 2026-01-23
+lastUpdated: 2026-01-23
+tags:
+    - frameworks
+    - security
+    - react
+    - nextJS
+    - svelte
+cover:
+  alt: An image of the react logo and an icon of a server with a caution sign
+  image: ../../../assets/blog/the-rsc-problem/hero.png
+---
+{/* TODO: Update the image */}
+
+import {Image} from "astro:assets"
+
+Recently there have been a large number of vulnerabilities reported in... well, most projects [^1] (more than double the yearly reports from 2021 to 2025). A large driving factor in this is AI among other things (like more general security awareness these days). In theory this sounds great, more issues are being caught and resolved, but it's not so clean-cut.
+
+{/* excerpt */}
+
+## Case Studies
+
+To help explore the positives and negatives of this let's explore a few recent security disclosures.
+
+### cURL
+
+Most of my projects are not important enough to have CVE's filed on them. So, intead I want to recount the experience of someone who does. [Daniel Stenberg](https://daniel.haxx.se/) is the founder and lead developer on [cURL](https://curl.se/), the incredibly popular command line utility (and [library](https://curl.se/libcurl/c/)) that most developers use at some point or another to do troubleshooting, and testing for networks. If you work on the web, this is practically essential infrastructure at this point. 
+
+[Hackerone](https://www.hackerone.com/) is a platform where people can be paid for their security work. For the purposes of this article the important aspect of the platform is it's [bug bounty platform](https://www.hackerone.com/product/bug-bounty-platform), which is used to pay people for legitimate bug reports. The keyword here being **legitimate**. 
+
+In 2024 (and probably earlier), Stenberg published a popular post called [*The I in LLM Stands for Inteligence*](https://daniel.haxx.se/blog/2024/01/02/the-i-in-llm-stands-for-intelligence/) about the slew of hallucinated reports being submitted by people for bounties. As confirmed quite recently (as of writing) [this issue has not slowed down in 2026](https://www.linkedin.com/feed/update/urn:li:activity:7415877645512433664/). He also posted [a gist](https://gist.github.com/bagder/07f7581f6e3d78ef37dfbfc81fd1d1cd) with more examples. In particular it seems to be a platform issue given that they have not seen the same issues on github as he noted recently:
+
+> Note: we have not seen the AI slop tsunami in the issues and pull requests as we do on Hackerone. This growth is entirely human made and benign.
+> - Daniel Stenberg, [*20,000 issues on GitHub*](https://daniel.haxx.se/blog/2025/12/16/20000-issues-on-github/)
+
+Due to how long I've procrastinated this article I was going to say that I predict situations such as these causing people to just shut down bug bounty programs. It would have seemed quite clairvoyant, but unfortunately 2 days after starting the first paragraph it was just announced that they are doing this[^4] [^5]. 
+
+The potential knock-on effects of losing these programs is immense. Security research is often boring, frustrating, and unrewarding. Attempting many, many times to generate exploits that may never come. Offering monetary incentives makes it worthwhile for people to do the research. Losing this incentive means that at best the good work that would have been done is just moved to other projects, and at worst that researchers decide it's more worthwhile to just sell the exploits (or use them).
+
+### RSC (react server components)/Flight Protocol & Mongobleed
+
+A little while ago I made a post about a recent [major react vulnerability](../the-rsc-problem) (2 actually). I explained everything more clearly in that post, so if you need a breakdown head there. Additionally there is another issue called [mongobleed](https://www.mongodb.com/company/blog/news/mongodb-server-security-update-december-2025), to keep things simple this vulnerability came down to a single line of code. Essentially when returning data from a mongo endpoint part of the process is figuring out the size of what to send. As part of this process you could say the data you needed was larger than it was, and return extra data from memory. 
+
+The main thing I wanted to mention is that these two issues took a long time to find. RSC's are not new, neither is the flight protocol that lead to the issues. Likewise the bug has been in mongoDB for a long time. So, what's changed. I can only speculate, but my suspicion is that for large codebases like these there is a lot of exploration that can be done quickly and cheaply through AI. These bugs were found deep in the guts of the projects, the places that less people tend to explore naturally, and therefore are less likely to notice odd behaviours. 
+
+Additionally these bugs are incredibly simple in the sense that reproducing them is trivial. Arguably finding and disclosing these sorts of bugs is largely a matter of patern-matching, something that AI is actually quite good at. So, while we don't have concrete data that these two were found by AI (at least to my knowledge), these types of domains are exactly the poster-child use case for AI-related scans. I have had AI catch common race conditions, and out-of-bounds accesses before I do when asking unrelated questions about code snipepts, so I know it's possible. As I was writing another similar obscure issue came up to do with a DoS through how V8 handles recursion[^3], similar bugs exist in downstream frameworks[^6], the same principle could be applied here.
+
+## Future vulnerabilities
+
+This is the section where my optimism sours. While AI can be useful (or harmful) in security research, AI also frequently produces horrible code. Not just code that is inefficient, but code that is dangerous. There is a popular example from the ocaml github where a [13,000 line PR]() was entirely vibe coded:
+
+> [I did not write a single line of code but carefully shepherded AI over the course of several days and kept it on the straight and narrow.](https://github.com/ocaml/ocaml/pull/14369#issuecomment-3556497947)
+> - JoelRayMont, [PR #14369 on OCaml github repo](https://github.com/ocaml/ocaml/pull/14369)
+
+As was seen in the [cURL](#cURL) example from earlier we just have people that are shipping and sending things without review. Charitably this could be chalked up to laziness, but more likely it's the inability to validate. This problem is exacerbated by the AI maximalism of the industry that is being perpetuated by AI companies, and other major platforms like github. Github has recently for example published an article called  [*How to create issues and pull requests in record time on GitHub*](https://github.blog/developer-skills/github/how-to-create-issues-and-pull-requests-in-record-time-on-github/), nothing in this article has any regard for the quality of the code, and especially not real security considerations.
+
+You may think this just effects the open-source world, but this attitude is incredibly prevalent everywhere. Annecdotally I've had 6 events this month where various different people have confided in me that the **overwhelming majority** of their work is vibe-coded. A quintessential example of this is [levelsIO](https://x.com/levelsio). Someone who has created many businesses around letting AI write the majority of the code including a vibe coded game with major RCE exploits[^7]. 
+
+### The Lying Elephant in the Room
+
+While it's not guarenteed that if any of this code was hand-written it would certainly have been better. There have certainly been mistakes made by people programming. The problem with this attitude is that it throws away all pretense of problem-solving in exchange for speed. This tradeoff can be fine when projects do not matter, however for consequential projects deference needs to be paid to slowing down and doing things properly.
+
+## The Boring Truth
+
+The reality is that for better or worse AI tools are here. There are ways to use them appropriately, but the overall ROI in a security sense is yet to be seen over the long term. While I can optimistically hope that it will be used appropriately, as we've seen it's not looking any more likely than the negative outcomes so far.
+
+
+[^1]: https://www.cvedetails.com/
+[^2]: https://jerrygamblin.com/2025/01/05/2024-cve-data-review/
+[^3]: https://nodejs.org/en/blog/vulnerability/january-2026-dos-mitigation-async-hooks
+[^4]: https://lists.haxx.se/pipermail/daniel/2026-January/000143.html
+[^5]: https://github.com/curl/curl/pull/20312
+[^6]: https://svelte.dev/blog/cves-affecting-the-svelte-ecosystem
+[^7]: https://x.com/levelsio/status/1896210668648612089
