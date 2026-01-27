@@ -1,0 +1,318 @@
+---
+title: "Don't Optimistic Render"
+date: 2026-01-26
+lastUpdated: 2026-01-26
+tags:
+    - frameworks
+    - performance
+    - design
+    - components
+cover:
+  alt: An image of a robot, magnifying glass and a bug
+  image: ../../../assets/blog/dont-optimistic-render.png
+---
+
+The web has gotten slow. Many things contribute to this. It's not every site, but many sites have found themselves spread thin. Multiple geolocations, complicated schemas built on top of legacy, and more complex feature demands will take their toll. As a "solution" to this, in the name of "user experience", optimistic rendering is sometimes proposed. Optimistic rendering is a terrible idea. At best it allows you to lie to users about performance, and at worst you lose data and user trust once they realize what you're doing.
+
+{/* excerpt */}
+
+## What is Optimistic Rendering
+
+Optimistic rendering flips the standard request-response model on it's head. Typically when you have a UI it **responds to what's happened**, let's say it's a "like button" on an article page with a counter for how many likes there are, the flow would be:
+
+1. Click the button
+2. A request is sent to the backend to store the new "like"
+3. The UI waits, it might have some sort of loading state during this
+4. When the UI get's the result of the response, it renders it (showing the like, showing an error message, or just never visually indicating the like went through)
+
+I was too lazy to put together a nice demo for this, so this is the best I got. This is a visual representation of what this might look like when everything works: 
+
+<div style="flex">
+<button
+  style="padding:.8rem; border-radius:50vw;"
+>
+  Like (235)
+</button>
+<span>-- Click --></span>
+
+<button
+  style="padding:.8rem; border-radius:50vw;background:blue;"
+>
+  loading...
+</button>
+
+<span>-- Response --></span>
+
+<button
+  style="padding:.8rem; border-radius:50vw;background:green;"
+>
+  Like (236)
+</button>
+</div>
+
+Click the button below for an interactive demo (only works once):
+<button
+  onclick="const btn = this; 
+  btn.innerText='loading...';
+  btn.style.backgroundColor = 'blue';
+  btn.style.color = 'white';
+  setTimeout(() => {
+    btn.style.backgroundColor = 'green';
+    btn.innerText = 'Like (236)';
+  }, 1750);"
+  style="padding:.8rem; border-radius:50vw;"
+>
+  Like (235)
+</button>
+
+This is a visual representation of what this might look like when something goes wrong: 
+
+<div style="flex">
+<button
+  style="padding:.8rem; border-radius:50vw;"
+>
+  Like (235)
+</button>
+<span>-- Click --></span>
+
+<button
+  style="padding:.8rem; border-radius:50vw;background:blue;"
+>
+  loading...
+</button>
+
+<span>-- Response --></span>
+
+<button
+  style="padding:.8rem; border-radius:50vw;background:red;"
+>
+  Like (235)
+</button>
+</div>
+
+Click the button below for an interactive demo (only works once):
+<button
+  onclick="const btn = this; 
+  btn.innerText='loading...';
+  btn.style.backgroundColor = 'blue';
+  btn.style.color = 'white';
+  setTimeout(() => {
+    btn.style.backgroundColor = 'red';
+    btn.innerText = 'Like (235)';
+  }, 1750);"
+  style="padding:.8rem; border-radius:50vw;"
+>
+  Like (235)
+</button>
+
+This is a pretty typical approach for many designs. If you wanted to save a document from an editor for example, you would hit save, and it would say `saved` or raise an error. I could go on with examples, but this type of design is what I would call "response-driven rendering", though usually it goes unnamed because it's the default way of doing things. 
+
+Instead, optimistic rendering would tell you to update the UI **assuming** everything will go "right", then only updating to an error state if something goes wrong. Consider our "like button", to make it optimistic we would:
+
+1. Click the button, and immediately show the success state (update the like counter by 1, and highlight the button blue or green to indicate success)
+2. The UI waits for a response
+3. If the response is an error, show an error state (and sometimes roll back old state, which in this case would decrease the like count by 1)
+
+With the "working" example, everything looks pretty familiar:
+
+<div style="flex">
+<button
+  style="padding:.8rem; border-radius:50vw;"
+>
+  Like (235)
+</button>
+<span>-- Click --></span>
+
+<button
+  style="padding:.8rem; border-radius:50vw;background:green;"
+>
+  Like (236)
+</button>
+
+</div>
+
+Click the button below for an interactive demo (only works once):
+<button
+  onclick="const btn = this; 
+    btn.style.backgroundColor = 'green';
+    btn.innerText = 'Like (236)';"
+  style="padding:.8rem; border-radius:50vw;"
+>
+  Like (235)
+</button>
+
+But when things go wrong:
+
+<div style="flex">
+<button
+  style="padding:.8rem; border-radius:50vw;"
+>
+  Like (235)
+</button>
+<span>-- Click --></span>
+
+<button
+  style="padding:.8rem; border-radius:50vw;background:green;"
+>
+  Like (236)
+</button>
+
+<span>-- Response --></span>
+
+<button
+  style="padding:.8rem; border-radius:50vw;background:red;"
+>
+  Like (235)
+</button>
+</div>
+
+Click the button below for an interactive demo (only works once):
+<button
+  onclick="const btn = this; 
+  btn.innerText='loading...';
+  btn.style.backgroundColor = 'green';
+  btn.innerText = 'Like (236)';
+  btn.style.color = 'white';
+  setTimeout(() => {
+    btn.style.backgroundColor = 'red';
+    btn.innerText = 'Like (235)';
+  }, 1750);"
+  style="padding:.8rem; border-radius:50vw;"
+>
+  Like (235)
+</button>
+
+The primary argument for this approach is UX. To the user it **feels** instant, but it's not. It's lipstick on a pig...
+
+## The Problems
+
+There are quite a few problems with this approach in practice. To give you a TL;DR, they're essentially that this approach assumes:
+
+1. User's waiting for errors
+2. Reliable Networks
+3. Reliable Page State
+
+### The Waiting Game
+
+The first problem comes in with people like me. I often am moving through my tabs pretty quickly. I read a lot of articles, watch a lot of videos, etc. When I do this I might click something like a "save for later" button, then close the tab and move on with my day. With optimistic UI I don't actually know if something has been saved or not. I've lost **many** links to exactly this problem.
+
+I go to save something, the UI tells me that the resource is saved for later, and the error occurs a few hundred miliseconds after I've moved on with my day. The worst part about this is that I don't know the threshold, if someone puts a 30 second error threshold then I need to remember to stick around for 30 seconds in case there's a false positive. 
+
+As an example, here is a button with an 6 second threshold that will error 100% of the time. Click the button below for an interactive demo (only works once):
+<button
+  onclick="const btn = this; 
+  btn.style.backgroundColor = 'green';
+  btn.innerText = 'Saved';
+  btn.style.color = 'white';
+  setTimeout(() => {
+    btn.style.backgroundColor = 'red';
+    btn.innerText = 'Failed to Save';
+  }, 6000);"
+  style="padding:.8rem; border-radius:50vw; min-width:150px;"
+>
+  Save
+</button>
+
+Imagine having to sit through this to ensure data consistency for your interactions.
+
+
+### The Network
+
+Interacting with the network is always quite fickle. It's very easy to make simple mistakes that are hard to catch until you run into problems. This leaves us with a fair few ways that our "update-on-fail" approach can go wrong. Here's a good example:
+
+```js
+function updateButtonSuccessful(resp){
+  // Update button state here
+}
+
+function updateButtonFailure(resp){
+  // Update button state here
+}
+
+fetch(url).then(updateButtonSuccessful).catch(updateButtonFailure)
+```
+
+This code might look like a standard `fetch().then()` chain, but what actually invokes the `catch()`?
+
+So, what's the problem? Well, lots of things you might **expect** to invoke the `catch()` don't. For example, let's say you don't have the credentials you need to do an operation because you were logged out after a page went stale. If you hit the endpoint you would get a HTTP 403 code. All codes between 400-599 are error codes in HTTP, so it should proc the `catch()` right? Well, if you hit the unauthorized code the fetch [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) is considered `resolved`. If you wanted to make the `catch()` happen you would need a check like:
+
+```js
+function updateButtonSuccessful(resp){
+  if (resp.status)>399{
+    throw new Error(`Hit an error: ${resp.status}`)
+  }
+  // Update button state here
+}
+
+function updateButtonFailure(resp){
+  // Update button state here
+}
+
+fetch(url).then(updateButtonSuccessful).catch(updateButtonFailure)
+```
+
+But this example would still show up as "successful" without optimistic rendering, so who cares? Well, in a similar fashion to this error issue there's another situation we didn't account for, time. The default `fetch()` timeout changes per-platform. I couldn't find a great resource to give me a list of them, but some sources were suggesting **up to a 300 second timeout** on some platforms. This means that for the duration of "not-failing" the state would show in a success state. If you ever need to fix this, something quick and dirtt like this would work:
+
+```js
+seconds_to_miliseconds = 1000
+request_timeout = 10 * seconds_to_miliseconds // 10 Second timeout
+
+function updateButtonSuccessful(resp){
+  // Update button state here
+}
+
+function updateButtonFailure(resp){
+  // Update button state here
+}
+
+try {
+fetch(url, {signal: AbortSignal.timeout(request_timeout)}).then(updateButtonSuccessful).catch(updateButtonFailure)
+} catch (err) {
+  // Check if the error is a timeout error
+  if (error.name === 'TimeoutError' || error.name === 'AbortError') {
+    console.error('Fetch request timed out or was aborted:', error.name);
+    throw new Error('Request took too long to complete.');
+  } else {
+    // Handle other network errors (e.g., DNS failure, server unavailable)
+    console.error('Fetch error:', error);
+    throw new Error('Network request failed.');
+  }
+}
+```
+
+You can tweak this code to improve it, but the reality is that you can make it obvious to users something **was not saved** if you just don't render the button optimistically. 
+
+### Reliable Pages
+
+One of the major lies that exists in web development is that the browser is a completely stable platform. "It works on my machine" is just as relevant in browsers today as it is on other platforms. This also causes an issue because your "optimism" assumes success more often than not. In reality there are many things that contribute to this unpredictability.
+
+#### Extensions
+
+You have utterly no idea what will actually happen when a user opens your page because any number of extensions can mess with the typical loading behaviour. There are tons of "optimizer" plugins for example that will randomly kill things like background workers[^3] [^4], or "security" plugins that block network traffic based on whatever the developer "thinks" is insecure[^5] [^6] (don't use any of these btw I did not vet them as safe and do not endorse them).
+
+#### Vendor-specific Features
+
+Browser vendors have an ever-changing list of goals and standards that they are trying to meet. As part of this, sometimes they conflict with one another. As an example, if you leave a long-running tab and travel to another, many browsers will put the original tab in "memory-saving mode"[^1] [^2]. Likewise when you start the tab back up it's **supposed** to resume exactly as it was, but this is often not the case. 
+
+This means for longer-running network-dependent tasks your tabs can end up suspended mid-run. If you're using optimistic UI, the user will see a "success" state that whole time, including when they return to the tab. In some implementations returning will actually trigger a page refresh, meaning people will see a success state, and the page will refresh **before** you can show them an error state. This combined with any number of odd potential hydration issues, cache issues, etc. means that you can't rely on pages to always parse it's errors and update the UI accordingly. 
+
+
+## Where it CAN make sense
+
+So, you should never use optimistic rendering then? In basically every case, no. The limited cases where it **may** not be a disaster are limited. In particular something closer to a native app experience where:
+
+1. There are no network trips; Data is exclusively stored locally
+2. Your platform is completely stable; You know you aren't going to have something else from the OS or some other process/service interfere with yours
+3. You have done all the error checking necessary; Making sure your data storage API is **solid** in how it raises errors
+4. The data is not that important; It doesn't take much to "replace" the data that was entered, meaning it's not time-dependent, or unlikely to be recoverable if it's lost
+
+Which essentially boils down to local-only applications where the data doesn't actually matter. If you happen to be building an app like that, then go for it. The only real example I could think of is a local-only feedback survey app on a tablet kiosk, and even then it's probably not a great choice. For the rest of us, when data integrity matters, and being honest about application state matters, stick to non-optimistic rendering.
+
+[^1]: https://www.microsoft.com/en-us/edge/features/sleeping-tabs?form=MT0160
+[^2]: https://support.google.com/chrome/answer/12929150?hl=en#zippy=%2Cturn-memory-saver-on-or-off%2Cturn-tab-memory-usage-on-or-off
+[^3]: https://chromewebstore.google.com/detail/memory-saver/dhnagkedjknpmhmdoaggchdefbmbeabk?hl=en
+[^4]: https://chromewebstore.google.com/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh?hl=en
+[^5]: https://chromewebstore.google.com/detail/network-purifier/biianmojhbfpfmemppgcccnddpgojmkj
+[^6]: https://chromewebstore.google.com/detail/blockoli-web-request-bloc/fekkdhfmnpifpdgipnkjgfaalcffdeih?hl=en
+
+
