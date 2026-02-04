@@ -1,7 +1,7 @@
 ---
 title: "The Future of Web Security"
 date: 2026-01-23
-lastUpdated: 2026-01-23
+lastUpdated: 2026-02-04
 tags:
     - frameworks
     - security
@@ -40,6 +40,8 @@ The main thing I wanted to mention is that these two issues took a long time to 
 
 Additionally these bugs are incredibly simple in the sense that reproducing them is trivial. Arguably finding and disclosing these sorts of bugs is largely a matter of patern-matching, something that AI is actually quite good at. So, while we don't have concrete data that these two were found by AI (at least to my knowledge), these types of domains are exactly the poster-child use case for AI-related scans. I have had AI catch common race conditions, and out-of-bounds accesses before I do when asking unrelated questions about code snipepts, so I know it's possible. As I was writing another similar obscure issue came up to do with a DoS through how V8 handles recursion[^3], similar bugs exist in downstream frameworks[^6], the same principle could be applied here.
 
+UPDATE (Feb 4th 2026): A little while after writing this peice there was a good example of the positive effect in the recent vulnerability disclosures in OpenSSL by [AISLE](https://aisle.com/) using AI. Essentially the managed to find 12 CVE's in OpenSSL and 5 CVE's in the cURL project. So, there are concrete examples of the good it can do in the ecosystem.
+
 ## Future vulnerabilities
 
 This is the section where my optimism sours. While AI can be useful (or harmful) in security research, AI also frequently produces horrible code. Not just code that is inefficient, but code that is dangerous. There is a popular example from the ocaml github where a [13,000 line PR]() was entirely vibe coded:
@@ -74,3 +76,4 @@ The reality is that for better or worse AI tools are here. There are ways to use
 [^5]: https://github.com/curl/curl/pull/20312
 [^6]: https://svelte.dev/blog/cves-affecting-the-svelte-ecosystem
 [^7]: https://x.com/levelsio/status/1896210668648612089
+[^8]: https://www.lesswrong.com/posts/7aJwgbMEiKq5egQbd/ai-found-12-of-12-openssl-zero-days-while-curl-cancelled-its
