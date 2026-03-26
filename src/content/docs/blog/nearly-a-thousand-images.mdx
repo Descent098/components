@@ -1,0 +1,245 @@
+---
+title: My New Site Has Nearly 1,000 Images
+date: 2026-03-26
+lastUpdated: 2026-03-26
+tags:
+    - frameworks
+    - astro
+    - performance
+cover:
+  alt: An image of the logo of the site
+  image: ../../../assets/blog/annoying-side-of-astro.png
+---
+{/* TODO: UPDATE IMAGE*/}
+import GalleryScreenshot from "../../../assets/blog/nearly-a-thousand-images/gallery-screenshot.jpg"
+import {Image} from "astro:assets"
+import { Aside } from '@astrojs/starlight/components';
+
+
+I recently rebuilt my personal website. The heaviest part of which was several image galleries that totaled 87 images. That's a lot of images, especially considering they're all one one page. Yet, if I show you the output of the build command it paints an even worse picture...
+
+{/* excerpt */}
+
+```bash
+... # other output above
+09:38:39   ▶ /_astro/walk-n-wind.BbwUNv2y_ZVUtLW.jpg (before: 89kB, after: 17kB) (+47ms) (964/972)
+09:38:39   ▶ /_astro/tame-impala-ripoff.B83N9xta_Z13s8ec.png (before: 126kB, after: 316kB) (+65ms) (965/972)
+09:38:39   ▶ /_astro/proposal.Ca_wk3oN_Z1vQULk.jpg (before: 95kB, after: 23kB) (+65ms) (966/972)
+09:38:39   ▶ /_astro/walk-n-wind.BbwUNv2y_1p8Ix4.jpg (before: 89kB, after: 48kB) (+63ms) (967/972)
+09:38:39   ▶ /_astro/proposal.Ca_wk3oN_ZyxaM6.jpg (before: 95kB, after: 72kB) (+61ms) (968/972)
+09:38:39   ▶ /_astro/tame-impala-ripoff.B83N9xta_Z1QGmPK.png (before: 126kB, after: 1038kB) (+111ms) (969/972)
+09:38:39   ▶ /_astro/tame-impala-ripoff.B83N9xta_ZNG8Uf.jpg (before: 126kB, after: 5kB) (+24ms) (970/972)
+09:38:39   ▶ /_astro/tame-impala-ripoff.B83N9xta_1jMiFr.jpg (before: 126kB, after: 19kB) (+33ms) (971/972)
+09:38:39   ▶ /_astro/tame-impala-ripoff.B83N9xta_vy43S.jpg (before: 126kB, after: 73kB) (+74ms) (972/972)
+09:38:39 ✓ Completed in 59.97s.
+
+09:38:39 [build] ✓ Completed in 71.01s.
+09:38:39 [build] 1 page(s) built in 73.22s
+09:38:39 [build] Complete
+```
+
+No, the far right of the output is not wrong, I'm outputting 972 images on build. More impressively I'm outputting 972 images on build, and when running on my laptop (in silent mode) it only takes ~73 seconds to build fully (I love Astro). So, why are there so many images, and how does this site run faster than my old one that had 10 images?
+
+
+## A Ten Year Old Optimization
+
+By 2016 there was a sharp increase in the number of companies using websites to reach their users. With this change, people made terrible choices, like uploading 87 images to their blog for example. In particular many people were uploading photos from phones and cameras. These photos are massive. Individual photos can be a dozen (or two) MB. For a frame of reference a **somewhat** well optimized page with images, JS and CSS should rarely go over 2MB (in my opinion). 
+
+The main culprit is the resolution, and the way the images are encoded. Many cameras and phones at the time (and some today) don't care about filesize. They want quality, since that's their purpose. **Almost** never do you need this level of detail (but it does happen). On top of this, elements in multicolumn layouts will often rarely exceed 800px in width, yet many images can be up to 5,000px wide. But, to add complication this is where responsive design began to show it's face. So, now, how large an image **should** be is dependent on the user device, and that device is always wirelessly connected (so slow network) and low-power. With a full-width image on a webpage you can end up with phones needing 300px images, and desktops you might need 2,000px.
+
+Many hacky solutions were proposed with javascript and infrastructure, but the one browsers landed on was the new (at the time) [`<Picture>` element](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/picture) in March of 2016. What you would do is generate various versions of your images (typically using something like [gulp](https://gulpjs.com/) back then, or [vite](https://vite.dev/) in modern day). So, your original image might be 5,000px, but you also generate versions that are 800px wide, 400px wide, etc. Then the `<Picture>` element can do it's magic. You can define source sets that let you define different versions of images (widths, formats, etc.) and the browser is responsible for picking the best one. Here is an example [from MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/picture):
+
+```html
+<picture>
+  <source
+    srcset="small.jpg 480w, medium.jpg 800w, large.jpg 1200w"
+    sizes="(max-width: 600px) 400px, 800px"
+    type="image/jpeg" />
+  <img src="fallback.jpg" alt="Example image" />
+</picture>
+```
+
+In this case we have 3 sizes, and we set which one to use based on the users device width. We could also setup sources with different formats (jpg, webp, avif, png, etc.) depending on those conditions. You can actually do even more with `<Picture/>`, like loading images based on users preference for light and dark color schemes, or any other [media query](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Media_queries/Using).
+
+## How Astro Handles Images
+
+I used [Astro](https://astro.build/) for my site (and this one actually). Astro allows you (since version 4) to handle images in 2 different ways. The first way involves dumping images in the `/public` folder. These images remain untouched, and are exported as-is to the final build. Images in `/src` can be imported as if they are components (a feature of [vite](https://vite.dev/) which astro uses under the hood). When you import an image from `/src` you get the option to work with it more dynamically. In particular Astro has it's own `<Image>` and `<Picture>` elements. Each can take one of these `/src` images as a `src` attribute. From there your settings will determine how many images get **generated** from that image in the final build. For example:
+
+```astro
+---
+import MyImage from "/src/image/myfile.png"
+import {Image, Picture} from "astro:assets"
+---
+
+<Image src={MyImage} width={500}>
+<Picture src={MyImage} widths={[800, 400]}>
+```
+
+The regular `<Image>` will become an `<img>` with the `src` set to the **newly generated** image with a 500px width. The `<Picture>` element will generate a `<Picture>` that has a sourceset with **newly generated** 800px, and 400px variants. So, here's a simplified version of what this looks like on my site:
+
+
+```astro
+---
+import { Picture } from 'astro:assets';
+import { getCollection, type InferEntrySchema, type RenderedContent } from 'astro:content';
+
+// Constrains image to a maximum dimension in pixels
+function constrain(width: number, height: number, max = 800) {
+    const scale = Math.min(1, max / Math.max(width, height));
+    return {
+        width: Math.round(width * scale),
+        height: Math.round(height * scale),
+    };
+}
+
+// Only generate variants that are smaller than the image's actual constrained width
+function getWidths(constrainedWidth: number): number[] {
+    return [200, 400, 800].filter(w => w <= constrainedWidth);
+}
+
+const imageData = await getCollection("photographyGallery");  
+
+---
+
+<div>
+  {imageData!.map((image) =>{
+    const dims = constrain(image.data.path.width, image.data.path.height);
+    const widths = getWidths(dims.width);
+
+    return <Picture
+      class="gallery-image"
+      src={image.data.path}
+      alt={image.data.title ?? ''}
+      formats={['avif', 'webp', 'png', 'jpg']}
+      widths={widths}
+      width={dims.width}
+      height={dims.height}
+      sizes="(max-width: 540px) 100vw, (max-width: 900px) calc(50vw - 1rem), calc(33vw - 1rem)"
+      loading="lazy"
+      />
+    })}
+</div>
+```
+
+There's quite a lot of code here because I have landscape, portrait and square pictures that all have to be resized nicely to work in a masonry layout, but the principles are all still the same. Since I also want to allow people to click to view the original source images (since it's a photo gallery), I also add duplicates of the images to `/public` and make them a clickable link. The actual collection for the images is in `content.config.ts` and looks like this:
+
+```ts
+import { defineCollection } from 'astro:content';
+import { glob, file } from 'astro/loaders';
+import { z } from 'astro/zod';
+
+const gallerySchema = ({ image }) => z.object({
+        path:image(),
+        uneditedPath:z.string(),
+        title:z.string().optional(),
+        description:z.string().optional(),
+    })
+
+const renderingGallery = defineCollection({
+    loader: file("src/data/rendersGallery.json"),
+    schema: gallerySchema
+})
+const photographyGallery = defineCollection({
+    loader: file("src/data/photoGallery.json"),
+    schema: gallerySchema
+})
+```
+
+So, to make everything work nicely you'll see I have a JSON file for each gallery to coordinate this. Then for example in `src/data/photoGallery.json` you would get:
+
+```json
+[
+    {
+        "slug":"gengar",
+        "path":"./../images/photography/gengar.jpg",
+        "uneditedPath": "/images/photography/unsplash/gengar.jpg"
+    },
+    {
+        "slug":"pelican",
+        "path":"./../images/photography/pelican.jpg",
+        "uneditedPath":"/images/photography/unsplash/pelican.jpg"
+    }
+]
+```
+
+Then the actual component would be a nicer version of something like this:
+
+```astro
+---
+import { Picture } from 'astro:assets';
+import { getCollection, type InferEntrySchema, type RenderedContent } from 'astro:content';
+
+// Constrains image to a maximum dimension in pixels
+function constrain(width: number, height: number, max = 800) {
+    const scale = Math.min(1, max / Math.max(width, height));
+    return {
+        width: Math.round(width * scale),
+        height: Math.round(height * scale),
+    };
+}
+
+// Only generate variants that are smaller than the image's actual constrained width
+function getWidths(constrainedWidth: number): number[] {
+    return [200, 400, 800].filter(w => w <= constrainedWidth);
+}
+
+const imageData = await getCollection("photographyGallery");  
+
+---
+
+<div>
+  {imageData!.map((image) =>{
+    const dims = constrain(image.data.path.width, image.data.path.height);
+    const widths = getWidths(dims.width);
+
+    return <>
+        <Picture
+          class="gallery-image"
+          src={image.data.path}
+          alt={image.data.title ?? ''}
+          formats={['avif', 'webp', 'png', 'jpg']}
+          widths={widths}
+          width={dims.width}
+          height={dims.height}
+          sizes="(max-width: 540px) 100vw, (max-width: 900px) calc(50vw - 1rem), calc(33vw - 1rem)"
+          loading="lazy"
+        />
+        <a href={image.data.uneditedPath} target="_blank">view original</a>
+      </>
+    })}
+</div>
+```
+
+It's worth noting there are probably cleaner solutions, but I gave myself a week to do this whole project, and this was just 1 component. 
+
+### The Downsides
+
+There are some downsides to this in theory, the main one being that you need to be able to **know** your files at build time. Doing this dynamically is **sometimes** possible, but very finicky when I've worked with it. As you saw I had to do a lot of type juggling in the last example to get a collection to work nicely with it. Those problems expand even more when using remote services.
+
+Additionally, generating these images does take time, in many cases not a ton, but it adds up. I pretty much exclusively use astro as a static site generator, so I don't care about generating a bunch of stuff up front, but if you use it in dynamic mode, this can **kill** your performance.
+
+## How Well Does This Work
+
+I would say my site is probably one of the most extreme examples I've worked with because many of my images were straight from the camera, wildly different aspect ratios, and basically everything unoptimal you could imagine. Because I set the `loading` to `lazy` the initial page load is still only ~500kb, which creeps up as you get to the images on the page.
+
+In general my images are over ~550MB when on disk, but when served via a plain HTTP server on my laptop after being built the whole gallery on the page is ~2.2MB. A 250x reduction. I would say that's pretty good. While quality is in the eye of the beholder, I think I also struck a good balance, but you can decide for yourself below:
+
+
+<Image
+  src={GalleryScreenshot}
+  width={900}
+  alt="A screenshot of the gallery"
+/>
+<Aside type="note">
+The above image uses the `<Image>` tag if you're wondering:
+
+```astro
+<Image
+  src={GalleryScreenshot}
+  width={900}
+  alt="A screenshot of the gallery"
+/>
+```
+</Aside>
+
+It would have been nice to get under 2MB, but considering what I'm trying to do, and the timeframe to do it, I'm going to give myself a bit of a pass here. Ironically mobile actually has a higher data usage because a 3 column layout on a normal display goes down to a single column, higher resolution on mobile. 
