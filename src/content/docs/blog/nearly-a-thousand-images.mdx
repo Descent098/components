@@ -1,22 +1,24 @@
 ---
 title: My New Site Has Nearly 1,000 Images
-date: 2026-03-26
-lastUpdated: 2026-03-26
+date: 2026-03-27
+lastUpdated: 2026-03-27
+featured: true
 tags:
     - frameworks
     - astro
     - performance
+    - design
+    - ux
 cover:
   alt: An image of the logo of the site
-  image: ../../../assets/blog/annoying-side-of-astro.png
+  image: ../../../assets/blog/nearly-a-thousand-images/hero.png
 ---
-{/* TODO: UPDATE IMAGE*/}
 import GalleryScreenshot from "../../../assets/blog/nearly-a-thousand-images/gallery-screenshot.jpg"
 import {Image} from "astro:assets"
 import { Aside } from '@astrojs/starlight/components';
 
 
-I recently rebuilt my personal website. The heaviest part of which was several image galleries that totaled 87 images. That's a lot of images, especially considering they're all one one page. Yet, if I show you the output of the build command it paints an even worse picture...
+I recently rebuilt [my personal website](https://kieranwood.ca). The heaviest part of which was several image galleries that totaled 87 images. That's a lot of images, especially considering they're all one one page. Yet, if I show you the output of the build command it paints an even worse picture...
 
 {/* excerpt */}
 
@@ -222,12 +224,12 @@ Additionally, generating these images does take time, in many cases not a ton, b
 
 I would say my site is probably one of the most extreme examples I've worked with because many of my images were straight from the camera, wildly different aspect ratios, and basically everything unoptimal you could imagine. Because I set the `loading` to `lazy` the initial page load is still only ~500kb, which creeps up as you get to the images on the page.
 
-In general my images are over ~550MB when on disk, but when served via a plain HTTP server on my laptop after being built the whole gallery on the page is ~2.2MB. A 250x reduction. I would say that's pretty good. While quality is in the eye of the beholder, I think I also struck a good balance, but you can decide for yourself below:
+In general my images are ~290MB when on disk (over ~750MB with all the variants), but when served via a plain HTTP server on my laptop after being built the whole gallery on the page is ~2.8MB, a \~103x reduction. I would say that's pretty good. While quality is in the eye of the beholder, I think I also struck a good balance, but you can decide for yourself below:
 
 
 <Image
   src={GalleryScreenshot}
-  width={900}
+  width={1200}
   alt="A screenshot of the gallery"
 />
 <Aside type="note">
@@ -236,10 +238,10 @@ The above image uses the `<Image>` tag if you're wondering:
 ```astro
 <Image
   src={GalleryScreenshot}
-  width={900}
+  width={1200}
   alt="A screenshot of the gallery"
 />
 ```
 </Aside>
 
-It would have been nice to get under 2MB, but considering what I'm trying to do, and the timeframe to do it, I'm going to give myself a bit of a pass here. Ironically mobile actually has a higher data usage because a 3 column layout on a normal display goes down to a single column, higher resolution on mobile. 
+It would have been nice to get under 2MB, but considering what I'm trying to do, and the timeframe to do it, I'm going to give myself a bit of a pass here. Ironically mobile actually has a higher data usage because a 3 column layout on a normal display goes down to a single column, higher resolution on mobile. I will (and have since I initally wrote this article) continue to tweak the settings to get better results
